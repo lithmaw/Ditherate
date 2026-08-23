@@ -186,6 +186,30 @@ src/main.ts     wiring and app state
 | Animations (footer) | meteor icon — turn all motion on or off; remembered between visits |
 | Sound (footer) | speaker icon — mute the UI effects; remembered between visits |
 
+## Responsive
+
+The preview box is sized in JavaScript (`computeBoxSize`), not CSS. The same
+number has to drive the canvas's backing store, and a `min()` inside a custom
+property can't be read back as a number — so CSS carries a static fallback for
+the first paint and JS refines it against the viewport, keeping the box within
+both the column's width and the height left over by the header, controls and
+button.
+
+That size is re-applied on resize and rotation, debounced and guarded on the
+value actually changing: mobile browsers fire `resize` as the URL bar collapses
+on scroll, and re-rasterising the source for each of those would be waste.
+
+Two layout details worth keeping:
+
+- `.stage` is full width. Without it the history strip is bounded by the image
+  above it, so a narrow portrait photo squeezes the thumbnails onto a second row
+  and the page shifts — the exact thing the reserved row exists to prevent.
+- Thumbnails and gaps shrink at 520px and again at 400px so eight of them still
+  fit on one row at the narrowest supported width.
+
+Verified with no horizontal overflow and a stable button position at 320, 360,
+390, 430, 768 and 1024px.
+
 ## Notes
 
 - Exports are capped at 4096px on the long edge. Beyond that there's nothing to gain:

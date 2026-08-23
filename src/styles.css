@@ -117,6 +117,9 @@ body {
   color: var(--text);
   font-family: var(--mono);
   -webkit-font-smoothing: antialiased;
+  /* No blue flash on tap, and no double-tap zoom delay on controls. */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .shell {
@@ -229,6 +232,10 @@ body {
 /* ---------- stage ---------- */
 
 .stage {
+  /* Full width so the history strip is bounded by the column rather than by
+     the image above it — otherwise a narrow portrait image squeezes the
+     thumbnails onto a second row and the page shifts again. */
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -287,7 +294,7 @@ body {
 
 .dropbox__canvas {
   display: block;
-  max-width: var(--box-size);
+  max-width: 100%;
   max-height: var(--box-size);
   /* Hard pixel edges: the whole point of dithering. */
   image-rendering: pixelated;
@@ -319,7 +326,9 @@ body {
 .tools {
   display: flex;
   align-items: center;
-  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
   font-size: 14px;
 }
 
@@ -413,6 +422,7 @@ body {
   left: 0;
   z-index: 10;
   min-width: 100%;
+  max-width: min(280px, calc(100vw - 32px));
   /* Opaque, and matching the pixel cover exactly — any gap between the two
      would show as a seam while the cover dissolves. */
   background: var(--menu);
@@ -641,14 +651,114 @@ body {
   mask: url('/assets/sound.svg') center / contain no-repeat;
 }
 
-@media (max-width: 520px) {
+/* ---------- responsive ---------- */
+
+@media (max-width: 760px) {
   .column {
-    padding: 20px;
+    padding: 24px;
+    gap: 32px;
+  }
+
+  .workspace {
+    gap: 28px;
+    padding-bottom: 24px;
+  }
+
+  .stage {
+    gap: 20px;
+  }
+}
+
+@media (max-width: 520px) {
+  /* The column's own padding and dashed edges are enough framing on a phone;
+     the shell's gutters just eat width the controls need. */
+  .shell {
+    padding: 0;
+  }
+
+  .column {
+    padding: 16px;
+    gap: 24px;
+  }
+
+  /* The logo and the chip together overrun a phone's width at full size. */
+  .wordmark {
+    width: 132px;
+    height: 12px;
+    margin-left: 8px;
+  }
+
+  .chip {
+    gap: 8px;
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .chip__icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .tools {
+    font-size: 12px;
+  }
+
+  .tool,
+  .pselect__trigger {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .pselect__option {
+    font-size: 12px;
+  }
+
+  /* Smaller thumbnails so eight of them still fit on one row — the strip
+     reserves a single row's height, and wrapping to two would shift the page. */
+  .history {
+    gap: 5px;
+    min-height: 30px;
+  }
+
+  .history__item {
+    width: 30px;
+    height: 30px;
   }
 
   .ditherate {
-    padding: 18px 32px;
-    font-size: 16px;
+    padding: 16px 28px;
+    font-size: 15px;
+    letter-spacing: 0.9px;
+  }
+
+  .workspace {
+    gap: 22px;
+    padding-bottom: 16px;
+  }
+}
+
+@media (max-width: 400px) {
+  .column {
+    padding: 12px;
+  }
+
+  .history {
+    gap: 4px;
+    min-height: 28px;
+  }
+
+  .history__item {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* Touch devices have no hover, so the pointer cursors are pure overhead. */
+@media (hover: none) {
+  *,
+  *::before,
+  *::after {
+    cursor: auto;
   }
 }
 

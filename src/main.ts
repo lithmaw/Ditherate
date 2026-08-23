@@ -50,8 +50,30 @@ const ctx = canvas.getContext('2d')!;
 const imageReveal = new ImageReveal(dropbox, canvasPixels);
 
 /** Single source of truth for the box size lives in CSS. */
-const BOX_SIZE =
-  parseInt(getComputedStyle(document.documentElement).getPropertyValue('--box-size'), 10) || 358;
+const MAX_BOX = 560;
+const MIN_BOX = 200;
+/** Rough height of everything stacked above and below the image. */
+const CHROME_HEIGHT = 400;
+
+/**
+ * The preview box is sized here rather than in CSS because the same number has
+ * to drive the canvas's backing store, and a `min()` in a custom property
+ * can't be read back as a number. CSS holds a static fallback for the first
+ * paint; this refines it and keeps it in step with the viewport.
+ */
+function computeBoxSize(): number {
+  const column = document.querySelector('.column');
+  const padding = column ? parseFloat(getComputedStyle(column).paddingLeft) : 35;
+  const horizontal = window.innerWidth - padding * 2 - 16;
+  const vertical = window.innerHeight - CHROME_HEIGHT;
+  return Math.round(Math.max(MIN_BOX, Math.min(MAX_BOX, horizontal, vertical)));
+}
+
+function applyBoxSize(): number {
+  const size = computeBoxSize();
+  document.documentElement.style.setProperty('--box-size', `${size}px`);
+  return size;
+}
 
 /** Exports beyond this are pointless: the result is an upscale of the dithered pass either way. */
 const MAX_EXPORT_EDGE = 4096;
@@ -131,11 +153,14 @@ function rasterise(bitmap: ImageBitmap, width: number, height: number): ImageDat
   return surfaceCtx.getImageData(0, 0, width, height);
 }
 
-function loadImage(bitmap: ImageBitmap, name: string): void {
-  // The canvas backing store matches the on-screen size in device pixels, so one
-  // dithered pixel lands on exactly one device pixel — no browser resampling to
-  // smear the pattern.
-  const display = fit(bitmap.width, bitmap.height, BOX_SIZE);
+/**
+ * Size the canvas to the current box and re-read the source at that resolution.
+ * The backing store matches the on-screen size in device pixels, so one
+ * dithered pixel lands on exactly one device pixel — no browser resampling to
+ * smear the pattern.
+ */
+function layoutCanvas(bitmap: ImageBitmap): ImageData {
+  const display = fit(bitmap.width, bitmap.height, applyBoxSize());
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   const width = Math.round(display.width * dpr);
   const height = Math.round(display.height * dpr);
@@ -144,6 +169,10 @@ function loadImage(bitmap: ImageBitmap, name: string): void {
   canvas.height = height;
   canvas.style.width = `${display.width}px`;
   canvas.style.height = `${display.height}px`;
+  return rasterise(bitmap, width, height);
+}
+
+function loadImage(bitmap: ImageBitmap, name: string): void {
   canvas.hidden = false;
 
   dropbox.classList.add('has-image');
@@ -160,7 +189,7 @@ function loadImage(bitmap: ImageBitmap, name: string): void {
   setRollActionsEnabled(false);
   history.clear();
 
-  loaded = { bitmap, name, source: rasterise(bitmap, width, height) };
+  loaded = { bitmap, name, source: layoutCanvas(bitmap) };
   current = null;
   play('drop');
 
@@ -265,6 +294,32 @@ async function download(): Promise<void> {
 // Run before anything else so the cover comes off as early as possible.
 setupIntroReveal(intro);
 setupCursorFix(fileInput);
+applyBoxSize();
+
+/**
+ * Re-fit on resize and rotation. Guarded on the box size actually changing:
+ * mobile browsers fire resize as the URL bar collapses on scroll, and
+ * re-rasterising the source on every one of those would be pure waste.
+ */
+let lastBoxSize = computeBoxSize();
+let resizeTimer: number | undefined;
+window.addEventListener('resize', () => {
+  window.clearTimeout(resizeTimer);
+  resizeTimer = window.setTimeout(() => {
+    const size = computeBoxSize();
+    if (size === lastBoxSize) return;
+    lastBoxSize = size;
+
+    if (!loaded) {
+      applyBoxSize();
+      return;
+    }
+    loaded.source = layoutCanvas(loaded.bitmap);
+    // Re-run the roll on screen at the new size, or put the plain image back.
+    if (current) void render(current.settings.seed, current.settings.map, current.flipped);
+    else ctx.putImageData(loaded.source, 0, 0);
+  }, 180);
+});
 
 setupDropzone({
   box: dropbox,
