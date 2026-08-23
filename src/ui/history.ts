@@ -1,7 +1,9 @@
+import type { MapId } from '../dither/thresholdMaps.ts';
+
 const MAX_ENTRIES = 8;
 const THUMB_SIZE = 96;
 
-type Entry = { seed: number; thumbnail: string };
+type Entry = { seed: number; map: MapId; thumbnail: string };
 
 /**
  * The last few rolls, as clickable thumbnails.
@@ -15,12 +17,12 @@ export class History {
 
   constructor(
     private readonly container: HTMLElement,
-    private readonly onSelect: (seed: number) => void,
+    private readonly onSelect: (seed: number, map: MapId) => void,
   ) {}
 
-  add(seed: number, image: ImageData): void {
-    if (!this.entries.some((entry) => entry.seed === seed)) {
-      this.entries.push({ seed, thumbnail: makeThumbnail(image) });
+  add(seed: number, map: MapId, image: ImageData): void {
+    if (!this.entries.some((entry) => entry.seed === seed && entry.map === map)) {
+      this.entries.push({ seed, map, thumbnail: makeThumbnail(image) });
       if (this.entries.length > MAX_ENTRIES) this.entries.shift();
     }
     this.activeSeed = seed;
@@ -55,7 +57,7 @@ export class History {
       img.alt = `roll ${entry.seed}`;
       button.append(img);
 
-      button.addEventListener('click', () => this.onSelect(entry.seed));
+      button.addEventListener('click', () => this.onSelect(entry.seed, entry.map));
       this.container.append(button);
     }
   }

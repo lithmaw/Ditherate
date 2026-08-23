@@ -28,10 +28,19 @@ const range = (rng: () => number, lo: number, hi: number): number => lo + rng() 
  * all-white, because a wasted press breaks the slot-machine feel.
  *
  * `sourceData` is optional; without it the "sampled from image" palette is skipped.
+ *
+ * `forcedMap` pins the algorithm while everything else stays random. The random
+ * pick is still drawn even when it's overridden, so a given seed produces the
+ * same palette, contrast and grain whichever algorithm it ends up wearing.
  */
-export function rollSettings(seed: number, sourceData?: Uint8ClampedArray): Settings {
+export function rollSettings(
+  seed: number,
+  sourceData?: Uint8ClampedArray,
+  forcedMap?: MapId,
+): Settings {
   const rng = mulberry32(seed);
-  const map = pick(rng, MAP_IDS);
+  const rolled = pick(rng, MAP_IDS);
+  const map = forcedMap ?? rolled;
 
   // Monochrome-first: ~65% of rolls stay 1-bit black & white, matching the
   // design's intent, with colour showing up often enough to feel like a surprise.

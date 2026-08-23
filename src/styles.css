@@ -2,7 +2,7 @@
 :root {
   --bg: #0a0a0a;
   --panel: #0b0b0b;
-  --line: rgba(255, 255, 255, 0.25);
+  --line: rgba(255, 255, 255, 0.1);
   --chip: rgba(255, 255, 255, 0.05);
   --chip-hover: rgba(255, 255, 255, 0.1);
   --box: rgba(255, 255, 255, 0.01);
@@ -87,6 +87,7 @@ body {
 }
 
 .wordmark {
+  position: relative;
   display: block;
   /* The logo's artwork is 1275.2 x 118.96 — a 10.72:1 wordmark. */
   height: 18px;
@@ -94,6 +95,23 @@ body {
   background-color: currentColor;
   -webkit-mask: url('/assets/wordmark.svg') left center / contain no-repeat;
   mask: url('/assets/wordmark.svg') left center / contain no-repeat;
+}
+
+/*
+ * The mask on .wordmark clips its descendants too, so these cells only ever
+ * show inside the letterforms. Painting one in the panel colour punches a
+ * pixel-shaped hole in the logo — which is the whole shuffle effect.
+ */
+.wordmark__shuffle {
+  position: absolute;
+  inset: 0;
+  display: grid;
+}
+
+.wordmark__cell {
+  display: block;
+  background: var(--panel);
+  opacity: 0;
 }
 
 .chip {
@@ -112,10 +130,13 @@ body {
   background: var(--chip-hover);
 }
 
-.chip img {
+.chip__icon {
   display: block;
   width: 16px;
   height: 16px;
+  background-color: currentColor;
+  -webkit-mask: url('/assets/star.svg') center / contain no-repeat;
+  mask: url('/assets/star.svg') center / contain no-repeat;
 }
 
 /* ---------- stage ---------- */
@@ -205,6 +226,9 @@ body {
 }
 
 .tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   padding: 8px 14px;
   background: var(--chip);
   border: 0;
@@ -222,6 +246,57 @@ body {
 .tool:disabled {
   opacity: 0.4;
   cursor: default;
+}
+
+.tool__icon {
+  display: block;
+  width: 14px;
+  height: 14px;
+  background-color: currentColor;
+}
+
+.tool__icon--download {
+  -webkit-mask: url('/assets/download.svg') center / contain no-repeat;
+  mask: url('/assets/download.svg') center / contain no-repeat;
+}
+
+/* ---------- algorithm select ---------- */
+
+.select {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--chip);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.select__label {
+  color: var(--muted);
+}
+
+.select__input {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  padding-right: 12px;
+  /* A monospace caret, so it matches the rest of the type. */
+  background-image: linear-gradient(transparent, transparent);
+}
+
+.select__input:focus-visible {
+  outline: 1px solid var(--line);
+}
+
+/* The native dropdown list paints in the OS palette, so force it dark. */
+.select__input option {
+  background: #101010;
+  color: var(--text);
 }
 
 /* ---------- history ---------- */

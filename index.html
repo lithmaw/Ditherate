@@ -20,16 +20,17 @@
     <div class="shell">
       <main class="column">
         <header class="header">
-          <span class="wordmark" role="img" aria-label="Ditherate"></span>
-          <!-- TODO: point this at your own repo / support page. -->
+          <span class="wordmark" id="wordmark" role="img" aria-label="Ditherate">
+            <span class="wordmark__shuffle" id="wordmarkShuffle" aria-hidden="true"></span>
+          </span>
           <a
             class="chip"
-            href="https://github.com/"
+            href="https://github.com/lithmaw/Ditherate"
             target="_blank"
             rel="noreferrer noopener"
           >
-            <img src="/assets/support.svg" alt="" aria-hidden="true" />
-            <span>Support</span>
+            <span class="chip__icon" aria-hidden="true"></span>
+            <span>Star on GitHub</span>
           </a>
         </header>
 
@@ -51,7 +52,16 @@
             <p class="caption" id="caption" hidden></p>
 
             <div class="tools" id="tools" hidden>
-              <button type="button" class="tool" id="downloadBtn">download png</button>
+              <label class="select" for="algorithm">
+                <span class="select__label">algorithm</span>
+                <select class="select__input" id="algorithm">
+                  <option value="">random</option>
+                </select>
+              </label>
+              <button type="button" class="tool" id="downloadBtn">
+                <span class="tool__icon tool__icon--download" aria-hidden="true"></span>
+                <span>download png</span>
+              </button>
             </div>
 
             <div class="history" id="history" hidden aria-label="Previous rolls"></div>
@@ -60,7 +70,6 @@
           <button type="button" class="ditherate" id="ditherateBtn" disabled>
             <span class="ditherate__pixels" id="ditheratePixels" aria-hidden="true"></span>
             <span class="ditherate__label">
-              <span class="ditherate__icon" aria-hidden="true"></span>
               <span>DITHERATE</span>
               <span class="ditherate__icon" aria-hidden="true"></span>
             </span>

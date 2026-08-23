@@ -1,11 +1,12 @@
 import './styles.css';
 import { randomSeed, rollSettings } from './dither/random.ts';
-import { warmThresholdMaps } from './dither/thresholdMaps.ts';
+import { MAP_IDS, MAP_LABELS, warmThresholdMaps, type MapId } from './dither/thresholdMaps.ts';
 import { renderDither, warmRenderer } from './render/index.ts';
 import type { Settings } from './dither/types.ts';
 import { downloadImageData } from './ui/download.ts';
 import { setupDropzone } from './ui/dropzone.ts';
 import { History } from './ui/history.ts';
+import { setupLogoShuffle } from './ui/logoShuffle.ts';
 import { setupPixelReveal } from './ui/pixelReveal.ts';
 
 const el = <T extends HTMLElement>(id: string): T => {
@@ -18,6 +19,9 @@ const dropbox = el<HTMLButtonElement>('dropbox');
 const dropboxPrompt = el('dropboxPrompt');
 const canvas = el<HTMLCanvasElement>('canvas');
 const ditheratePixels = el('ditheratePixels');
+const algorithmSelect = el<HTMLSelectElement>('algorithm');
+const wordmark = el('wordmark');
+const wordmarkShuffle = el('wordmarkShuffle');
 const caption = el('caption');
 const tools = el('tools');
 const downloadBtn = el<HTMLButtonElement>('downloadBtn');
@@ -45,9 +49,13 @@ let loaded: Loaded | null = null;
 let current: { settings: Settings; result: ImageData } | null = null;
 let busy = false;
 
-const history = new History(historyEl, (seed) => {
-  void render(seed);
+const history = new History(historyEl, (seed, map) => {
+  // Restore the roll exactly as it was, whatever the picker says now.
+  void render(seed, map);
 });
+
+/** The algorithm the picker is pinned to, or null for "random". */
+const selectedMap = (): MapId | null => (algorithmSelect.value || null) as MapId | null;
 
 /** Fit `w x h` inside a square of `max`, never scaling up. */
 function fit(w: number, h: number, max: number): { width: number; height: number } {
@@ -106,7 +114,8 @@ function loadImage(bitmap: ImageBitmap, name: string): void {
 
   // Roll straight away — an upload that just sits there waiting for a second
   // click is a worse first impression than seeing the effect immediately.
-  void render(takeSharedSeed() ?? randomSeed());
+  const shared = takeShared();
+  void render(shared?.seed ?? randomSeed(), shared?.map);
 }
 
 /**
@@ -114,32 +123,38 @@ function loadImage(bitmap: ImageBitmap, name: string): void {
  * shared-link case. Consuming it means a later upload gets a fresh roll instead
  * of being pinned to whatever seed the link carried.
  */
-let sharedSeed: number | null = (() => {
-  const match = /(?:^|[#&])s=(\d+)/.exec(window.location.hash);
-  if (!match) return null;
-  const value = Number(match[1]);
-  return Number.isFinite(value) ? value >>> 0 : null;
+let shared: { seed: number; map?: MapId } | null = (() => {
+  const seedMatch = /(?:^|[#&])s=(\d+)/.exec(window.location.hash);
+  if (!seedMatch) return null;
+  const seed = Number(seedMatch[1]);
+  if (!Number.isFinite(seed)) return null;
+
+  const mapMatch = /(?:^|[#&])m=([\w-]+)/.exec(window.location.hash);
+  const map = MAP_IDS.find((id) => id === mapMatch?.[1]);
+  return { seed: seed >>> 0, map };
 })();
 
-function takeSharedSeed(): number | null {
-  const seed = sharedSeed;
-  sharedSeed = null;
-  return seed;
+function takeShared(): { seed: number; map?: MapId } | null {
+  const value = shared;
+  shared = null;
+  return value;
 }
 
-async function render(seed: number): Promise<void> {
+async function render(seed: number, forcedMap?: MapId): Promise<void> {
   if (!loaded || busy) return;
   busy = true;
   ditherateBtn.classList.add('is-busy');
 
   try {
-    const settings = rollSettings(seed, loaded.source.data);
+    const settings = rollSettings(seed, loaded.source.data, forcedMap ?? selectedMap() ?? undefined);
     const result = await renderDither(loaded.source, settings);
     current = { settings, result };
 
     ctx.putImageData(result, 0, 0);
-    history.add(seed, result);
-    window.history.replaceState(null, '', `#s=${seed}`);
+    history.add(seed, settings.map, result);
+    // The map goes in the URL too, or a shared link reproduces the roll's
+    // palette and grain but not its algorithm.
+    window.history.replaceState(null, '', `#s=${seed}&m=${settings.map}`);
     clearCaption();
   } catch (error) {
     console.error(error);
@@ -197,6 +212,19 @@ ditherateBtn.addEventListener('click', () => {
   void render(randomSeed());
 });
 
+for (const id of MAP_IDS) {
+  const option = document.createElement('option');
+  option.value = id;
+  option.textContent = MAP_LABELS[id];
+  algorithmSelect.append(option);
+}
+
+// Changing the algorithm re-rolls immediately, so the choice is visible at once
+// rather than waiting for the next press.
+algorithmSelect.addEventListener('change', () => {
+  if (loaded) void render(randomSeed());
+});
+
 downloadBtn.addEventListener('click', () => {
   void download();
 });
@@ -212,3 +240,4 @@ if (typeof requestIdleCallback === 'function') {
 }
 
 setupPixelReveal(ditherateBtn, ditheratePixels);
+setupLogoShuffle(wordmark, wordmarkShuffle);

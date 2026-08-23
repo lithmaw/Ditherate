@@ -33,6 +33,20 @@ export const MAP_IDS: MapId[] = [
   'white-noise',
 ];
 
+/** Human-readable names for the algorithm picker. */
+export const MAP_LABELS: Record<MapId, string> = {
+  bayer2: 'bayer 2x2',
+  bayer4: 'bayer 4x4',
+  bayer8: 'bayer 8x8',
+  bayer16: 'bayer 16x16',
+  'blue-noise': 'blue noise',
+  threshold: 'threshold',
+  dot: 'clustered dot',
+  diagonal: 'diagonal',
+  spiral: 'spiral',
+  'white-noise': 'white noise',
+};
+
 /**
  * Rank every cell by a score function and normalise.
  *

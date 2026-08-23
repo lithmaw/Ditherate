@@ -78,6 +78,27 @@ The UI is deliberately bare: an image, one button, and nothing to read. There ar
 instructions and no readout of what a roll produced — the picture is the feedback. The
 only text that can appear under the image is an error.
 
+The **algorithm picker** is the one control. Left on `random` it stays a pure slot
+machine; pinned to an algorithm, that one is used and everything else — palette,
+contrast, gamma, pixel scale, grain — still rolls. The random draw for the algorithm
+happens either way, so a given seed produces the same palette and grain whichever
+algorithm it ends up wearing.
+
+Two consequences worth keeping:
+
+- History entries store the algorithm alongside the seed, so restoring an earlier roll
+  reproduces it exactly even if the picker has moved on since.
+- The URL carries both (`#s=1849203&m=dot`), or a shared link would reproduce a roll's
+  palette and grain but not its algorithm.
+
+The picker says what the *next* roll will be, not what's on screen — restoring from
+history deliberately leaves it alone.
+
+The **logo** shuffles its own pixels while hovered. The cells sit inside the wordmark,
+which carries a CSS mask, so they're clipped to the letterforms — painting one in the
+panel colour punches a pixel-shaped hole, and blinking a random third of them in and out
+reads as the logo scrambling itself.
+
 The button's **pixel reveal** uses [anime.js](https://animejs.com)
 (`src/ui/pixelReveal.ts`). It rests as grey text in a matching outline; hovering
 scatters white cells across it via `stagger(7, { grid, from: 'random' })` until they
@@ -96,7 +117,7 @@ fill it in. Three details worth keeping:
 src/dither/     threshold maps, palettes, CPU pipeline — pure, DOM-free
 src/render/     WebGL2 renderer + engine selection
 src/worker/     runs src/dither off the main thread
-src/ui/         dropzone, pixel reveal, history, download
+src/ui/         dropzone, pixel reveal, logo shuffle, history, download
 src/main.ts     wiring and app state
 ```
 
@@ -107,6 +128,7 @@ src/main.ts     wiring and app state
 | Click the box / drag a file / Ctrl+V | load an image |
 | Click the image again | swap in a different one |
 | DITHERATE | roll a new random look |
+| Algorithm picker | pin one algorithm, keep everything else random |
 | History thumbnails | jump back to an earlier roll |
 
 ## Notes
@@ -114,7 +136,6 @@ src/main.ts     wiring and app state
 - Exports are capped at 4096px on the long edge. Beyond that there's nothing to gain:
   the result is an upscale of the dithered pass either way.
 - EXIF orientation is honoured, so phone photos come out the right way up.
-- The "Support" link in the header is a placeholder — point it somewhere real.
 - Don't await `img.decode()` anywhere in the roll path. It never settles while a tab
   isn't painting, which is enough to wedge the whole app.
 
