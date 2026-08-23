@@ -169,6 +169,13 @@ body {
 .wordmark {
   position: relative;
   display: block;
+  /*
+   * Margin, not padding: the mask is sized to the border box, so padding would
+   * leave the artwork exactly where it is. This matches the logo's inset to
+   * the chip's own horizontal padding, so the two ends of the header read as
+   * equally spaced rather than the logo sitting hard against the edge.
+   */
+  margin-left: 15px;
   /* The logo's artwork is 1275.2 x 118.96 — a 10.72:1 wordmark. */
   height: 18px;
   width: 193px;

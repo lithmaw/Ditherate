@@ -329,6 +329,10 @@ function paintMotionToggle(): void {
 // attached here rather than wiring sound through a generic component.
 algorithmTrigger.addEventListener('click', () => play('click'));
 algorithmList.addEventListener('click', () => play('click'));
+historyEl.addEventListener('click', (event) => {
+  // The strip reserves an empty row, so only a real thumbnail should tick.
+  if ((event.target as HTMLElement).closest('.history__item')) play('click');
+});
 
 function paintSoundToggle(): void {
   paintToggle(soundToggle, 'Sound', soundEnabled());
