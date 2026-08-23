@@ -201,7 +201,11 @@ src/main.ts     wiring and app state
   The overlay carries a solid fill in CSS so the page is covered from the first
   paint, and hands that fill over to the cells once JS builds them. `html` also
   gets its background inline in `<head>`, or the browser shows its default white
-  page until the stylesheet arrives. The cover is deliberately lighter than the
+  page until the stylesheet arrives.
+- `styles.css` is linked from `index.html`, not imported from `main.ts`. A JS
+  import means the stylesheet is injected only after the module evaluates, so
+  the raw unstyled markup paints first; a `<link>` is render-blocking in both
+  dev and the build. The cover is deliberately lighter than the
   page — matching it made the reveal invisible. It runs about 800ms.
 - Chrome drops the page's custom cursor after a native file dialog closes and
   won't re-evaluate until the pointer moves. `src/ui/cursorFix.ts` forces the

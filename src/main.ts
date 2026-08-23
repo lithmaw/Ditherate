@@ -1,4 +1,3 @@
-import './styles.css';
 import { randomSeed, rollSettings } from './dither/random.ts';
 import { MAP_IDS, MAP_LABELS, warmThresholdMaps, type MapId } from './dither/thresholdMaps.ts';
 import { renderDither, warmRenderer } from './render/index.ts';

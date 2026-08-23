@@ -3,12 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DITHERATE</title>
+    <title>Ditherate — One-Click Dither</title>
     <meta
       name="description"
       content="Upload an image, hit one button, get a randomly dithered version. Everything runs in your browser."
     />
-    <link rel="icon" href="/assets/sparkle.svg" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
     <!--
       Inline so it applies on the very first paint. Without it the browser
       shows its default white page until the stylesheet arrives, which reads as
@@ -25,6 +25,12 @@
       href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
+    <!--
+      Linked here rather than imported from main.ts. A JS import means the
+      stylesheet is injected after the module evaluates, so the raw unstyled
+      markup paints first; a <link> is render-blocking in dev and in the build.
+    -->
+    <link rel="stylesheet" href="/src/styles.css" />
   </head>
   <body>
     <canvas class="backdrop" id="backdrop" aria-hidden="true"></canvas>
