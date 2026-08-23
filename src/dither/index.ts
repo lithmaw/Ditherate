@@ -11,7 +11,7 @@ import type { Settings } from './types.ts';
 export function dither(source: ImageLike, settings: Settings): ImageLike {
   const { width, height } = source;
 
-  // Work on a copy — the caller keeps the original for the compare view.
+  // Work on a copy — the caller reuses the source for every subsequent roll.
   let img: ImageLike = { data: new Uint8ClampedArray(source.data), width, height };
 
   preprocess(img.data, settings);

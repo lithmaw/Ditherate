@@ -6,7 +6,6 @@ import type { Settings } from './dither/types.ts';
 import { downloadImageData } from './ui/download.ts';
 import { setupDropzone } from './ui/dropzone.ts';
 import { History } from './ui/history.ts';
-import { Magnifier } from './ui/magnify.ts';
 import { setupPixelReveal } from './ui/pixelReveal.ts';
 
 const el = <T extends HTMLElement>(id: string): T => {
@@ -17,25 +16,16 @@ const el = <T extends HTMLElement>(id: string): T => {
 
 const dropbox = el<HTMLButtonElement>('dropbox');
 const dropboxPrompt = el('dropboxPrompt');
-const previewWrap = el('previewWrap');
-const preview = el<HTMLImageElement>('preview');
-const zoomPane = el('zoomPane');
+const canvas = el<HTMLCanvasElement>('canvas');
 const ditheratePixels = el('ditheratePixels');
 const caption = el('caption');
 const tools = el('tools');
 const downloadBtn = el<HTMLButtonElement>('downloadBtn');
-const replaceBtn = el<HTMLButtonElement>('replaceBtn');
 const historyEl = el('history');
 const ditherateBtn = el<HTMLButtonElement>('ditherateBtn');
 const fileInput = el<HTMLInputElement>('fileInput');
 
-// The dither result is composited here, then published as an object URL: the
-// zoom library works on an <img> with a source, not on a canvas.
-const scratch = document.createElement('canvas');
-const scratchCtx = scratch.getContext('2d')!;
-let previewUrl: string | null = null;
-
-const magnifier = new Magnifier(previewWrap, preview, zoomPane);
+const ctx = canvas.getContext('2d')!;
 
 /** Single source of truth for the box size lives in CSS. */
 const BOX_SIZE =
@@ -47,7 +37,7 @@ const MAX_EXPORT_EDGE = 4096;
 type Loaded = {
   bitmap: ImageBitmap;
   name: string;
-  /** The image at preview resolution, un-dithered — kept for the compare view. */
+  /** The image at preview resolution, un-dithered — re-dithered on every roll. */
   source: ImageData;
 };
 
@@ -68,9 +58,15 @@ function fit(w: number, h: number, max: number): { width: number; height: number
   };
 }
 
-function setCaption(text: string, isError = false): void {
+/** The caption is an error slot only — it stays hidden when nothing is wrong. */
+function setCaption(text: string): void {
   caption.textContent = text;
-  caption.classList.toggle('is-error', isError);
+  caption.hidden = false;
+}
+
+function clearCaption(): void {
+  caption.textContent = '';
+  caption.hidden = true;
 }
 
 /** Draw a bitmap into an offscreen canvas at a given size and read the pixels back. */
@@ -92,12 +88,15 @@ function loadImage(bitmap: ImageBitmap, name: string): void {
   const width = Math.round(display.width * dpr);
   const height = Math.round(display.height * dpr);
 
-  preview.style.width = `${display.width}px`;
-  preview.style.height = `${display.height}px`;
-  previewWrap.hidden = false;
+  canvas.width = width;
+  canvas.height = height;
+  canvas.style.width = `${display.width}px`;
+  canvas.style.height = `${display.height}px`;
+  canvas.hidden = false;
 
   dropbox.classList.add('has-image');
   dropboxPrompt.hidden = true;
+  clearCaption();
   ditherateBtn.disabled = false;
   tools.hidden = false;
   history.clear();
@@ -108,37 +107,6 @@ function loadImage(bitmap: ImageBitmap, name: string): void {
   // Roll straight away — an upload that just sits there waiting for a second
   // click is a worse first impression than seeing the effect immediately.
   void render(takeSharedSeed() ?? randomSeed());
-}
-
-/**
- * Composite the result and publish it as an object URL for the <img> and the
- * magnifier — the zoom library needs a real source URL, not a canvas.
- *
- * Deliberately fire-and-forget: nothing downstream needs to wait for the image
- * to paint. An earlier version awaited `img.decode()` here, which never settles
- * while the tab isn't painting and left the app wedged with `busy` stuck true.
- */
-function showResult(image: ImageData): void {
-  scratch.width = image.width;
-  scratch.height = image.height;
-  scratchCtx.putImageData(image, 0, 0);
-
-  scratch.toBlob((blob) => {
-    if (!blob) return;
-    const url = URL.createObjectURL(blob);
-
-    // The magnifier needs the <img> measured, so bind it on load. Assigning
-    // onload (rather than adding a listener) means a fast re-roll replaces the
-    // pending handler instead of stacking up.
-    preview.onload = () => magnifier.attach(url);
-    preview.src = url;
-
-    // Safe to release immediately: the element now points at the new URL, and
-    // the already-decoded frame it is still showing doesn't depend on the old
-    // one staying alive.
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    previewUrl = url;
-  }, 'image/png');
 }
 
 /**
@@ -169,13 +137,13 @@ async function render(seed: number): Promise<void> {
     const result = await renderDither(loaded.source, settings);
     current = { settings, result };
 
-    showResult(result);
+    ctx.putImageData(result, 0, 0);
     history.add(seed, result);
     window.history.replaceState(null, '', `#s=${seed}`);
-    setCaption('press DITHERATE to roll a different look');
+    clearCaption();
   } catch (error) {
     console.error(error);
-    setCaption('something went wrong dithering that image', true);
+    setCaption('something went wrong dithering that image');
   } finally {
     busy = false;
     ditherateBtn.classList.remove('is-busy');
@@ -211,7 +179,7 @@ async function download(): Promise<void> {
     await downloadImageData(result, `ditherate-${current.settings.seed}.png`);
   } catch (error) {
     console.error(error);
-    setCaption("couldn't export that image", true);
+    setCaption("couldn't export that image");
   } finally {
     downloadBtn.disabled = false;
     downloadBtn.textContent = original;
@@ -222,11 +190,8 @@ setupDropzone({
   box: dropbox,
   fileInput,
   onImage: loadImage,
-  onError: (message) => setCaption(message, true),
-  canBrowse: () => loaded === null,
+  onError: (message) => setCaption(message),
 });
-
-replaceBtn.addEventListener('click', () => fileInput.click());
 
 ditherateBtn.addEventListener('click', () => {
   void render(randomSeed());

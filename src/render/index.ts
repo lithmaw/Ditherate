@@ -21,8 +21,8 @@ export const engine = (): Engine => lastEngine;
 /**
  * Dither on the GPU when we can, on the CPU worker when we can't.
  *
- * Both paths return ImageData, so everything downstream — preview, compare,
- * history thumbnails, PNG export — is identical regardless of which ran.
+ * Both paths return ImageData, so everything downstream — preview, history
+ * thumbnails, PNG export — is identical regardless of which ran.
  */
 export async function renderDither(source: ImageData, settings: Settings): Promise<ImageData> {
   const gl = renderer();

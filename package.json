@@ -13,7 +13,6 @@
     "vite": "^6.0.5"
   },
   "dependencies": {
-    "@zoom-image/core": "^0.42.0",
     "animejs": "^4.5.0"
   }
 }

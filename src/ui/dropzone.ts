@@ -3,8 +3,6 @@ type Options = {
   fileInput: HTMLInputElement;
   onImage: (bitmap: ImageBitmap, name: string) => void;
   onError: (message: string) => void;
-  /** False once an image is loaded — the box becomes a compare surface, not a picker. */
-  canBrowse: () => boolean;
 };
 
 const isImage = (file: File): boolean => file.type.startsWith('image/');
@@ -27,19 +25,9 @@ async function decode(file: File, options: Options): Promise<void> {
 export function setupDropzone(options: Options): void {
   const { box, fileInput } = options;
 
-  // Keyboard activation follows the same rule as the mouse: no picker once an
-  // image is loaded.
-  box.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      if (!options.canBrowse()) event.preventDefault();
-    }
-  });
-
-  box.addEventListener('click', () => {
-    // Without this guard, releasing a hold-to-compare press would pop the file
-    // dialog every single time.
-    if (options.canBrowse()) fileInput.click();
-  });
+  // Clicking the box always opens the picker — before an image is loaded to
+  // choose one, and afterwards to swap it out.
+  box.addEventListener('click', () => fileInput.click());
 
   fileInput.addEventListener('change', () => {
     const file = fileInput.files?.[0];

@@ -18,8 +18,8 @@ function compile(gl: WebGL2RenderingContext, type: number, source: string): WebG
  * WebGL2 dither renderer.
  *
  * Runs on an offscreen canvas and hands back ImageData, so it is a drop-in peer
- * of the CPU path — the preview, compare, history and export code downstream
- * don't know or care which engine produced the pixels.
+ * of the CPU path — the preview, history and export code downstream don't know
+ * or care which engine produced the pixels.
  */
 export class GpuRenderer {
   private canvas: HTMLCanvasElement;
@@ -68,7 +68,7 @@ export class GpuRenderer {
 
     for (const name of [
       'uImage', 'uMap', 'uPalette', 'uPaletteCount', 'uMapSize', 'uGrid', 'uLod',
-      'uThreshold', 'uSpread', 'uBrightness', 'uContrast', 'uGamma', 'uInvert', 'uBypass',
+      'uThreshold', 'uSpread', 'uBrightness', 'uContrast', 'uGamma', 'uInvert',
     ]) {
       this.uniforms[name] = gl.getUniformLocation(program, name);
     }
@@ -134,11 +134,8 @@ export class GpuRenderer {
     gl.generateMipmap(gl.TEXTURE_2D);
   }
 
-  /**
-   * Render one dither. `bypass` returns the source untouched, which is how the
-   * compare view gets the original without a second copy of the pixels.
-   */
-  render(source: ImageData, settings: Settings, bypass = false): ImageData {
+  /** Render one dither and read the pixels back. */
+  render(source: ImageData, settings: Settings): ImageData {
     const gl = this.gl;
     const { width, height } = source;
 
@@ -171,7 +168,6 @@ export class GpuRenderer {
     gl.uniform1f(u.uContrast, settings.contrast);
     gl.uniform1f(u.uGamma, settings.gamma);
     gl.uniform1f(u.uInvert, settings.invert ? 1 : 0);
-    gl.uniform1f(u.uBypass, bypass ? 1 : 0);
 
     gl.drawArrays(gl.TRIANGLES, 0, 3);
 

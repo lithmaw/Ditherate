@@ -33,7 +33,6 @@ uniform float uBrightness;
 uniform float uContrast;
 uniform float uGamma;
 uniform float uInvert;
-uniform float uBypass;        // 1.0 = show the source untouched
 
 in vec2 vUv;
 out vec4 fragColor;
@@ -66,12 +65,6 @@ void main() {
   vec2 cell = floor(vUv * uGrid);
   vec2 uv = (cell + 0.5) / uGrid;
   vec3 source = textureLod(uImage, uv, uLod).rgb * 255.0;
-
-  if (uBypass > 0.5) {
-    fragColor = vec4(source / 255.0, 1.0);
-    return;
-  }
-
   vec3 c = adjust(source);
 
   ivec2 mi = ivec2(mod(cell, vec2(uMapSize)));

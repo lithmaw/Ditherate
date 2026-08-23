@@ -10,7 +10,7 @@ const CELL = 14;
  * `from: 'random'` is doing the real work — it maps each cell's index onto a
  * position in the grid and offsets its delay from a random origin.
  */
-export function setupPixelReveal(button: HTMLElement, layer: HTMLElement): void {
+export function setupPixelReveal(button: HTMLButtonElement, layer: HTMLElement): void {
   let cells: HTMLElement[] = [];
   let grid: [number, number] = [1, 1];
 
@@ -38,6 +38,10 @@ export function setupPixelReveal(button: HTMLElement, layer: HTMLElement): void 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   const play = (visible: boolean): void => {
+    // Nothing to reveal until there's an image to dither: a locked button that
+    // lights up on hover reads as clickable when it isn't.
+    if (visible && button.disabled) return;
+
     build();
     if (!cells.length) return;
     // Drive the colour flip from the same trigger as the fill, rather than a

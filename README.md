@@ -74,23 +74,21 @@ whichever roll happens to land on it first.
 
 ### Interface
 
-Two effects lean on libraries:
+The UI is deliberately bare: an image, one button, and nothing to read. There are no
+instructions and no readout of what a roll produced — the picture is the feedback. The
+only text that can appear under the image is an error.
 
-- **Hover to magnify** — [`@zoom-image/core`](https://github.com/willnguyen1312/zoom-image)
-  (`src/ui/magnify.ts`). It works on an `<img>` with a source URL, not a canvas, so each
-  result is published as an object URL. The zoom pane sits directly on top of the image
-  so it magnifies in place; the library's lens is hidden, since a lens over the zoomed
-  view shows nothing useful. Its zoomed `<img>` is forced to `image-rendering: pixelated`
-  — CSS scaling interpolates smoothly by default, which would blur the dither into mush.
-- **Pixel-reveal button** — [anime.js](https://animejs.com) (`src/ui/pixelReveal.ts`).
-  The button rests as grey text in a matching outline; hovering scatters white cells
-  across it via `stagger(7, { grid, from: 'random' })` until they fill it in. The colour
-  flip is driven by the same class the animation toggles rather than a CSS `:hover` rule,
-  so text and fill stay in lockstep, keyboard focus behaves identically, and no sticky
-  hover is left behind on touch. Reduced-motion users get the state change without the
-  scatter.
+The button's **pixel reveal** uses [anime.js](https://animejs.com)
+(`src/ui/pixelReveal.ts`). It rests as grey text in a matching outline; hovering
+scatters white cells across it via `stagger(7, { grid, from: 'random' })` until they
+fill it in. Three details worth keeping:
 
-These two are why the bundle is ~23KB gzipped rather than ~7KB.
+- The colour flip is driven by the same class the animation toggles, not a CSS `:hover`
+  rule — text and fill stay in lockstep, keyboard focus behaves identically, and no
+  sticky hover is left behind on touch.
+- It refuses to play while the button is disabled. A locked button that lights up on
+  hover reads as clickable when it isn't.
+- Reduced-motion users get the state change without the scatter.
 
 ### Layout
 
@@ -98,7 +96,7 @@ These two are why the bundle is ~23KB gzipped rather than ~7KB.
 src/dither/     threshold maps, palettes, CPU pipeline — pure, DOM-free
 src/render/     WebGL2 renderer + engine selection
 src/worker/     runs src/dither off the main thread
-src/ui/         dropzone, magnifier, pixel reveal, history, download
+src/ui/         dropzone, pixel reveal, history, download
 src/main.ts     wiring and app state
 ```
 
@@ -107,8 +105,8 @@ src/main.ts     wiring and app state
 | | |
 |---|---|
 | Click the box / drag a file / Ctrl+V | load an image |
+| Click the image again | swap in a different one |
 | DITHERATE | roll a new random look |
-| Hover the image | magnify it, in place, at 4x |
 | History thumbnails | jump back to an earlier roll |
 
 ## Notes
@@ -117,8 +115,8 @@ src/main.ts     wiring and app state
   the result is an upscale of the dithered pass either way.
 - EXIF orientation is honoured, so phone photos come out the right way up.
 - The "Support" link in the header is a placeholder — point it somewhere real.
-- Nothing awaits `img.decode()`. It never settles while a tab isn't painting, which is
-  enough to wedge the whole app.
+- Don't await `img.decode()` anywhere in the roll path. It never settles while a tab
+  isn't painting, which is enough to wedge the whole app.
 
 ## Credits
 

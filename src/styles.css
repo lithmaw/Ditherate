@@ -88,8 +88,12 @@ body {
 
 .wordmark {
   display: block;
-  width: 132.166px;
-  height: 17.85px;
+  /* The logo's artwork is 1275.2 x 118.96 — a 10.72:1 wordmark. */
+  height: 18px;
+  width: 193px;
+  background-color: currentColor;
+  -webkit-mask: url('/assets/wordmark.svg') left center / contain no-repeat;
+  mask: url('/assets/wordmark.svg') left center / contain no-repeat;
 }
 
 .chip {
@@ -156,7 +160,7 @@ body {
 .dropbox.has-image {
   width: auto;
   height: auto;
-  cursor: zoom-in;
+  cursor: pointer;
 }
 
 .dropbox__prompt {
@@ -175,13 +179,7 @@ body {
   mask: url('/assets/upload.svg') center / contain no-repeat;
 }
 
-.preview {
-  position: relative;
-  display: block;
-  line-height: 0;
-}
-
-.preview__img {
+.dropbox__canvas {
   display: block;
   max-width: var(--box-size);
   max-height: var(--box-size);
@@ -189,55 +187,12 @@ body {
   image-rendering: pixelated;
 }
 
-/*
- * The magnifier pane sits directly on top of the image, so hovering magnifies
- * in place rather than throwing a second panel out to one side.
- */
-.zoom-pane {
-  position: absolute;
-  inset: 0;
-  display: block;
-  overflow: hidden;
-  pointer-events: none;
-  background: var(--panel);
-  opacity: 0;
-  transition: opacity 120ms ease;
-}
-
-.zoom-pane.is-zooming {
-  opacity: 1;
-}
-
-/*
- * @zoom-image/core scales its zoomed <img> with CSS, which interpolates
- * smoothly by default — that would blur the dither into mush and defeat the
- * entire point of magnifying it. Force nearest-neighbour.
- */
-.zoom-pane img {
-  image-rendering: pixelated;
-}
-
-/*
- * The library draws a lens rectangle over the source image to show which region
- * is being magnified. That only makes sense when the zoom pane sits beside the
- * image — ours sits directly on top of it, so the lens would float over the
- * magnified view showing nothing useful. The cursor is the indicator instead.
- *
- * !important is required: the library sets `display` inline.
- */
-.zoom-lens {
-  display: none !important;
-}
-
+/* Only ever shown to report a problem — there is no instruction copy. */
 .caption {
   margin: 0;
   font-size: 12px;
-  color: var(--muted);
-  text-align: center;
-}
-
-.caption.is-error {
   color: #ff6b5e;
+  text-align: center;
 }
 
 /* ---------- tools ---------- */
@@ -267,10 +222,6 @@ body {
 .tool:disabled {
   opacity: 0.4;
   cursor: default;
-}
-
-.tools__hint {
-  color: var(--muted);
 }
 
 /* ---------- history ---------- */

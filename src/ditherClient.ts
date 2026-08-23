@@ -24,8 +24,8 @@ class DitherClient {
 
   run(source: ImageData, settings: Settings): Promise<ImageData> {
     const id = this.nextId++;
-    // Copy: the caller keeps `source` for the compare view and for later rolls,
-    // so we must not transfer its buffer away.
+    // Copy: the caller reuses `source` for every later roll, so we must not
+    // transfer its buffer away.
     const buffer = source.data.slice().buffer;
     const request: DitherRequest = {
       id,

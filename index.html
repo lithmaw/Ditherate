@@ -20,7 +20,7 @@
     <div class="shell">
       <main class="column">
         <header class="header">
-          <img class="wordmark" src="/assets/wordmark.svg" alt="Ditherate" />
+          <span class="wordmark" role="img" aria-label="Ditherate"></span>
           <!-- TODO: point this at your own repo / support page. -->
           <a
             class="chip"
@@ -45,18 +45,13 @@
                 <span class="dropbox__icon" aria-hidden="true"></span>
                 <span>Upload Image</span>
               </span>
-              <span class="preview" id="previewWrap" hidden>
-                <img class="preview__img" id="preview" alt="Dithered result" />
-                <span class="zoom-pane" id="zoomPane" aria-hidden="true"></span>
-              </span>
+              <canvas class="dropbox__canvas" id="canvas" hidden></canvas>
             </button>
 
-            <p class="caption" id="caption">click on the box above to upload your image</p>
+            <p class="caption" id="caption" hidden></p>
 
             <div class="tools" id="tools" hidden>
               <button type="button" class="tool" id="downloadBtn">download png</button>
-              <button type="button" class="tool" id="replaceBtn">replace image</button>
-              <span class="tools__hint">hover the image to magnify</span>
             </div>
 
             <div class="history" id="history" hidden aria-label="Previous rolls"></div>
