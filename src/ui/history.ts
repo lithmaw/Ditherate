@@ -42,8 +42,9 @@ export class History {
   }
 
   private render(): void {
+    // Visibility is the caller's business: the strip reserves its row as soon
+    // as an image is loaded, so entries appearing don't reflow the page.
     this.container.replaceChildren();
-    this.container.hidden = this.entries.length < 2;
 
     // Newest first — the roll you just made is the one you're most likely to want back.
     for (const entry of [...this.entries].reverse()) {

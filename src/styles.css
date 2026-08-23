@@ -464,6 +464,9 @@ body {
   gap: 8px;
   flex-wrap: wrap;
   justify-content: center;
+  /* Holds one row's worth of space from the moment an image is loaded, so the
+     first thumbnail doesn't push the button and the image around when it lands. */
+  min-height: 48px;
 }
 
 .history__item {

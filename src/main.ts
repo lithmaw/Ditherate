@@ -154,6 +154,9 @@ function loadImage(bitmap: ImageBitmap, name: string): void {
   // generating. Invert and Download act on a roll, so they stay disabled until
   // there is one rather than disappearing.
   tools.hidden = false;
+  // Shown empty: the row is reserved now so the layout doesn't shift when the
+  // first roll lands in it.
+  historyEl.hidden = false;
   setRollActionsEnabled(false);
   history.clear();
 
