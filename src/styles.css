@@ -15,7 +15,7 @@
      Hotspots: the arrow's tip is the viewBox origin; the blocked glyph is
      symmetric, so its centre. */
   --cursor-default: url('/assets/cursors/default.svg') 1 1, auto;
-  --cursor-blocked: url('/assets/cursors/blocked.svg') 14 14, not-allowed;
+  --cursor-blocked: url('/assets/cursors/blocked.svg') 10 10, not-allowed;
   --mono: 'Geist Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
   --box-size: 560px;
 }
@@ -540,19 +540,53 @@ body {
 
 /* Deliberately quiet — there for anyone who goes looking, invisible otherwise. */
 .footer__toggle {
-  padding: 6px 10px;
+  position: relative;
+  display: inline-flex;
+  padding: 8px;
   background: none;
   border: 0;
-  color: var(--muted);
-  font: inherit;
-  font-size: 12px;
-  transition: color 120ms ease;
+  color: var(--text);
+  opacity: 0.55;
+  transition: opacity 120ms ease;
 }
 
 .footer__toggle:hover,
 .footer__toggle:focus-visible {
-  color: var(--text);
+  opacity: 1;
   outline: none;
+}
+
+/* Off: dimmer, and struck through so the state reads without a label. */
+.footer__toggle[aria-pressed='false'] {
+  opacity: 0.28;
+}
+
+.footer__toggle[aria-pressed='false']::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 22px;
+  height: 1.5px;
+  background: currentColor;
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.footer__icon {
+  display: block;
+  width: 18px;
+  height: 18px;
+  background-color: currentColor;
+}
+
+.footer__icon--motion {
+  -webkit-mask: url('/assets/motion.svg') center / contain no-repeat;
+  mask: url('/assets/motion.svg') center / contain no-repeat;
+}
+
+.footer__icon--sound {
+  -webkit-mask: url('/assets/sound.svg') center / contain no-repeat;
+  mask: url('/assets/sound.svg') center / contain no-repeat;
 }
 
 @media (max-width: 520px) {

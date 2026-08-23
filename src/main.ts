@@ -301,10 +301,19 @@ setupPixelReveal(ditherateBtn, ditheratePixels);
 setupLogoShuffle(wordmark, wordmarkShuffle);
 setupBackgroundNoise(backdrop);
 
+/**
+ * The footer controls are icon-only, so the state has to live in the
+ * accessible name and the tooltip rather than in visible text.
+ */
+function paintToggle(button: HTMLButtonElement, label: string, on: boolean): void {
+  const text = `${label}: ${on ? 'On' : 'Off'}`;
+  button.setAttribute('aria-pressed', String(on));
+  button.setAttribute('aria-label', text);
+  button.title = text;
+}
+
 function paintMotionToggle(): void {
-  const on = animationsEnabled();
-  motionToggle.textContent = `Animations: ${on ? 'On' : 'Off'}`;
-  motionToggle.setAttribute('aria-pressed', String(on));
+  paintToggle(motionToggle, 'Animations', animationsEnabled());
 }
 
 // The algorithm menu's own elements are built by PixelSelect, so the tick is
@@ -312,41 +321,27 @@ function paintMotionToggle(): void {
 algorithmTrigger.addEventListener('click', () => play('click'));
 algorithmList.addEventListener('click', () => play('click'));
 
+function paintSoundToggle(): void {
+  paintToggle(soundToggle, 'Sound', soundEnabled());
+}
+
 motionToggle.addEventListener('click', () => {
   play('click');
   setAnimationsEnabled(!animationsEnabled());
 });
-onAnimationsChange((on) => {
-  paintMotionToggle();
-
-function paintSoundToggle(): void {
-  const on = soundEnabled();
-  soundToggle.textContent = `Sound: ${on ? 'On' : 'Off'}`;
-  soundToggle.setAttribute('aria-pressed', String(on));
-}
 
 soundToggle.addEventListener('click', () => {
   // Play before muting so switching off still gives feedback that it worked.
   play('click');
   setSoundEnabled(!soundEnabled());
 });
-onSoundChange(paintSoundToggle);
-paintSoundToggle();
+
+onAnimationsChange((on) => {
+  paintMotionToggle();
   // Any cover mid-dissolve would otherwise freeze on top of the image.
   if (!on) imageReveal.hide();
 });
-paintMotionToggle();
-
-function paintSoundToggle(): void {
-  const on = soundEnabled();
-  soundToggle.textContent = `Sound: ${on ? 'On' : 'Off'}`;
-  soundToggle.setAttribute('aria-pressed', String(on));
-}
-
-soundToggle.addEventListener('click', () => {
-  // Play before muting so switching off still gives feedback that it worked.
-  play('click');
-  setSoundEnabled(!soundEnabled());
-});
 onSoundChange(paintSoundToggle);
+
+paintMotionToggle();
 paintSoundToggle();

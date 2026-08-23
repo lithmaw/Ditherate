@@ -119,7 +119,9 @@ Each sound is a self-contained module with the audio inlined as a base64 data
 URI, so there is nothing to fetch at runtime. The registry ships a React
 `useSound` hook *and* a framework-agnostic `sound-engine.ts`; this project uses
 the engine, so no React is involved. A footer switch mutes it, remembered in
-`localStorage`.
+`localStorage`. Both footer controls are icon-only; an off state is shown by
+dimming the icon and striking it through, with the state carried in
+`aria-label` and the tooltip.
 
 Loading an image does **not** dither it. The photo is shown untouched until you
 press the button; Invert and Download stay hidden until there's a roll for them
@@ -181,8 +183,8 @@ src/main.ts     wiring and app state
 | Invert | re-render the current roll with its polarity flipped |
 | Algorithm picker | pin one algorithm, keep everything else random |
 | History thumbnails | jump back to an earlier roll |
-| Animations (footer) | turn all motion on or off; remembered between visits |
-| Sound (footer) | mute the UI effects; remembered between visits |
+| Animations (footer) | meteor icon — turn all motion on or off; remembered between visits |
+| Sound (footer) | speaker icon — mute the UI effects; remembered between visits |
 
 ## Notes
 
