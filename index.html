@@ -48,6 +48,7 @@
                 <span>Upload Image</span>
               </span>
               <canvas class="dropbox__canvas" id="canvas" hidden></canvas>
+              <span class="dropbox__pixels" id="canvasPixels" aria-hidden="true" hidden></span>
             </button>
 
             <p class="caption" id="caption" hidden></p>
@@ -91,12 +92,15 @@
 
           <button type="button" class="ditherate" id="ditherateBtn" disabled>
             <span class="ditherate__pixels" id="ditheratePixels" aria-hidden="true"></span>
-            <span class="ditherate__label">
-              <span>Ditherate</span>
-              <span class="ditherate__icon" aria-hidden="true"></span>
-            </span>
+            <span class="ditherate__label">Ditherate</span>
           </button>
         </div>
+
+        <footer class="footer">
+          <button type="button" class="footer__toggle" id="motionToggle" aria-pressed="true">
+            Animations: On
+          </button>
+        </footer>
       </main>
     </div>
 

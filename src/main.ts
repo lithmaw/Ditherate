@@ -9,6 +9,8 @@ import { History } from './ui/history.ts';
 import { setupLogoShuffle } from './ui/logoShuffle.ts';
 import { PixelSelect } from './ui/pixelSelect.ts';
 import { setupBackgroundNoise } from './ui/backgroundNoise.ts';
+import { ImageReveal } from './ui/imageReveal.ts';
+import { animationsEnabled, onAnimationsChange, setAnimationsEnabled } from './ui/motion.ts';
 import { setupPixelReveal } from './ui/pixelReveal.ts';
 
 const el = <T extends HTMLElement>(id: string): T => {
@@ -29,6 +31,8 @@ const algorithmList = el('algorithmList');
 const algorithmPixels = el('algorithmPixels');
 const invertBtn = el<HTMLButtonElement>('invertBtn');
 const backdrop = el<HTMLCanvasElement>('backdrop');
+const canvasPixels = el('canvasPixels');
+const motionToggle = el<HTMLButtonElement>('motionToggle');
 const wordmark = el('wordmark');
 const wordmarkShuffle = el('wordmarkShuffle');
 const caption = el('caption');
@@ -39,6 +43,7 @@ const ditherateBtn = el<HTMLButtonElement>('ditherateBtn');
 const fileInput = el<HTMLInputElement>('fileInput');
 
 const ctx = canvas.getContext('2d')!;
+const imageReveal = new ImageReveal(dropbox, canvasPixels);
 
 /** Single source of truth for the box size lives in CSS. */
 const BOX_SIZE =
@@ -198,6 +203,7 @@ async function render(seed: number, forcedMap?: MapId): Promise<void> {
     current = { settings, result };
 
     ctx.putImageData(result, 0, 0);
+    imageReveal.play();
     history.add(seed, settings.map, inverted, result);
     // The map and invert flag go in the URL too, or a shared link reproduces
     // the roll's palette and grain but not how it actually looked.
@@ -285,3 +291,17 @@ if (typeof requestIdleCallback === 'function') {
 setupPixelReveal(ditherateBtn, ditheratePixels);
 setupLogoShuffle(wordmark, wordmarkShuffle);
 setupBackgroundNoise(backdrop);
+
+function paintMotionToggle(): void {
+  const on = animationsEnabled();
+  motionToggle.textContent = `Animations: ${on ? 'On' : 'Off'}`;
+  motionToggle.setAttribute('aria-pressed', String(on));
+}
+
+motionToggle.addEventListener('click', () => setAnimationsEnabled(!animationsEnabled()));
+onAnimationsChange((on) => {
+  paintMotionToggle();
+  // Any cover mid-dissolve would otherwise freeze on top of the image.
+  if (!on) imageReveal.hide();
+});
+paintMotionToggle();

@@ -12,9 +12,10 @@ const FPS = 9;
  * set of frames is built once and cycled, which is indistinguishable from
  * continuous static at this size and opacity.
  */
+import { animationsEnabled, onAnimationsChange } from './motion.ts';
+
 export function setupBackgroundNoise(canvas: HTMLCanvasElement): void {
   const ctx = canvas.getContext('2d', { alpha: true })!;
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   let frames: ImageData[] = [];
   let index = 0;
@@ -54,7 +55,9 @@ export function setupBackgroundNoise(canvas: HTMLCanvasElement): void {
 
   const start = (): void => {
     cancelAnimationFrame(raf);
-    if (reducedMotion.matches) return;
+    // With motion off the texture stays, it just stops churning — that reads
+    // better than dropping the gutters back to flat black.
+    if (!animationsEnabled()) return;
     raf = requestAnimationFrame(tick);
   };
 
@@ -69,7 +72,7 @@ export function setupBackgroundNoise(canvas: HTMLCanvasElement): void {
     }, 200);
   });
 
-  reducedMotion.addEventListener('change', start);
+  onAnimationsChange(start);
 
   build();
   start();

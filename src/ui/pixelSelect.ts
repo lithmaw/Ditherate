@@ -1,4 +1,5 @@
 import { animate, stagger, utils } from 'animejs';
+import { animationsEnabled } from './motion.ts';
 
 const CELL = 12;
 
@@ -29,7 +30,6 @@ export class PixelSelect {
   private items: HTMLElement[] = [];
   private active = 0;
   private value: string;
-  private readonly reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   constructor(private readonly o: Options) {
     this.value = o.options[0]?.value ?? '';
@@ -120,7 +120,7 @@ export class PixelSelect {
     this.buildCells();
     utils.remove(this.cells);
 
-    if (this.reducedMotion.matches) {
+    if (!animationsEnabled()) {
       this.setOpacity(0);
       return;
     }
@@ -147,7 +147,7 @@ export class PixelSelect {
     };
 
     utils.remove(this.cells);
-    if (this.reducedMotion.matches || !this.cells.length) {
+    if (!animationsEnabled() || !this.cells.length) {
       hide();
       return;
     }

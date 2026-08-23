@@ -110,6 +110,18 @@ stays valid — it is a polarity flip, not a pixel-exact negative of the output.
 toggle that forced inversion on would do nothing to the rolls that came up
 inverted already, which is the case it exists for.
 
+Each new result is **uncovered by dissolving a grid of pixels off it**, painted in
+the panel colour so the image assembles out of the background rather than fading
+in. The grid coarsens itself on large images so it never spawns thousands of
+nodes to animate.
+
+Every animated piece reads a single **motion switch** (`src/ui/motion.ts`) rather
+than checking `prefers-reduced-motion` itself, so the footer control and the OS
+setting can't disagree. The OS preference is the default; the footer choice wins
+once made and is remembered in `localStorage`. With motion off, state changes
+still happen — the button still flips to its filled state, it just doesn't
+scatter to get there.
+
 The **background** is a field of pixel static behind the whole page (the panel is
 opaque, so it only shows in the gutters). A viewport of random bytes at animation
 rate is real CPU for something nobody looks at directly, so a handful of frames
@@ -138,7 +150,7 @@ fill it in. Three details worth keeping:
 src/dither/     threshold maps, palettes, CPU pipeline — pure, DOM-free
 src/render/     WebGL2 renderer + engine selection
 src/worker/     runs src/dither off the main thread
-src/ui/         dropzone, pixel reveal, pixel select, logo shuffle, history, download
+src/ui/         dropzone, pixel reveals, pixel select, logo shuffle, motion, history, download
 src/main.ts     wiring and app state
 ```
 
@@ -152,6 +164,7 @@ src/main.ts     wiring and app state
 | Algorithm picker | pin one algorithm, keep everything else random |
 | Invert | flip the polarity of the current roll |
 | History thumbnails | jump back to an earlier roll |
+| Animations (footer) | turn all motion on or off; remembered between visits |
 
 ## Notes
 

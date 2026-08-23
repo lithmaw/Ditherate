@@ -1,4 +1,5 @@
 import { animate, stagger } from 'animejs';
+import { animationsEnabled } from './motion.ts';
 
 const CELL = 14;
 
@@ -35,8 +36,6 @@ export function setupPixelReveal(button: HTMLButtonElement, layer: HTMLElement):
     });
   };
 
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-
   const play = (visible: boolean): void => {
     // Nothing to reveal until there's an image to dither: a locked button that
     // lights up on hover reads as clickable when it isn't.
@@ -49,8 +48,8 @@ export function setupPixelReveal(button: HTMLButtonElement, layer: HTMLElement):
     // treatment, and there's no sticky hover left behind on touch devices.
     button.classList.toggle('is-revealed', visible);
 
-    // Reduced motion still gets the state change, just without the scatter.
-    if (reducedMotion.matches) {
+    // Motion off still gets the state change, just without the scatter.
+    if (!animationsEnabled()) {
       for (const cell of cells) cell.style.opacity = visible ? '1' : '0';
       return;
     }

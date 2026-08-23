@@ -1,4 +1,5 @@
 import { animate, stagger, utils } from 'animejs';
+import { animationsEnabled, onAnimationsChange } from './motion.ts';
 
 const CELL = 6;
 
@@ -11,7 +12,6 @@ const CELL = 6;
  * scrambling itself.
  */
 export function setupLogoShuffle(logo: HTMLElement, layer: HTMLElement): void {
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let cells: HTMLElement[] = [];
   let grid: [number, number] = [1, 1];
   let hovering = false;
@@ -71,12 +71,15 @@ export function setupLogoShuffle(logo: HTMLElement, layer: HTMLElement): void {
   };
 
   logo.addEventListener('pointerenter', () => {
-    if (reducedMotion.matches) return;
+    if (!animationsEnabled()) return;
     build();
     hovering = true;
     shuffle();
   });
   logo.addEventListener('pointerleave', stop);
+  onAnimationsChange((on) => {
+    if (!on) stop();
+  });
   window.addEventListener('blur', stop);
   window.addEventListener('resize', build);
 

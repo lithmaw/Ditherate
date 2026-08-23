@@ -12,7 +12,7 @@
   --btn-idle: #9a9a9a;
   --menu: #131313;
   --mono: 'Geist Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
-  --box-size: 460px;
+  --box-size: 560px;
 }
 
 *,
@@ -161,7 +161,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 15px;
+  gap: 26px;
 }
 
 .dropbox {
@@ -225,6 +225,19 @@ body {
 }
 
 /* Only ever shown to report a problem — there is no instruction copy. */
+.dropbox__pixels {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  pointer-events: none;
+}
+
+.dropbox__pixel {
+  display: block;
+  background: var(--panel);
+  opacity: 0;
+}
+
 .caption {
   margin: 0;
   font-size: 14px;
@@ -490,9 +503,6 @@ body {
 .ditherate__label {
   position: relative;
   z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
   transition: color 120ms ease;
 }
 
@@ -501,15 +511,6 @@ body {
  * text colour — grey at rest, black once the white fill arrives. An <img> can't
  * be recoloured by CSS.
  */
-.ditherate__icon {
-  display: block;
-  width: 22px;
-  height: 22px;
-  background-color: currentColor;
-  -webkit-mask: url('/assets/sparkle.svg') center / contain no-repeat;
-  mask: url('/assets/sparkle.svg') center / contain no-repeat;
-}
-
 .ditherate:not(:disabled):active {
   transform: scale(0.98);
 }
@@ -522,6 +523,33 @@ body {
 .ditherate.is-busy {
   opacity: 0.6;
   cursor: progress;
+}
+
+/* ---------- footer ---------- */
+
+.footer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 6px;
+}
+
+/* Deliberately quiet — there for anyone who goes looking, invisible otherwise. */
+.footer__toggle {
+  padding: 6px 10px;
+  background: none;
+  border: 0;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 120ms ease;
+}
+
+.footer__toggle:hover,
+.footer__toggle:focus-visible {
+  color: var(--text);
+  outline: none;
 }
 
 @media (max-width: 520px) {
