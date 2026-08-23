@@ -195,8 +195,9 @@ src/main.ts     wiring and app state
   isn't painting, which is enough to wedge the whole app.
 - Anything gated on an animation finishing needs a timeout backstop, for the same
   reason: animations don't run in a backgrounded tab.
-- Arriving dissolves a full-screen pixel cover off the page. It's rate-limited to
-  once every 10 minutes rather than once a visit, so a reload doesn't replay it.
+- Arriving dissolves a full-screen pixel cover off the page. **Currently set to
+  play on every visit for testing** — `QUIET_MS` in `src/ui/introReveal.ts` is 0;
+  restore `10 * 60 * 1000` for the intended once-per-10-minutes behaviour.
   The overlay carries a solid fill in CSS so the page is covered from the first
   paint, and hands that fill over to the cells once JS builds them.
 - Chrome drops the page's custom cursor after a native file dialog closes and

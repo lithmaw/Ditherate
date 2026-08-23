@@ -2,8 +2,13 @@ import { animate, stagger } from 'animejs';
 import { animationsEnabled } from './motion.ts';
 
 const STORAGE_KEY = 'ditherate:intro';
-/** How long a visitor is considered "already greeted" for. */
-const QUIET_MS = 10 * 60 * 1000;
+/**
+ * How long a visitor is considered "already greeted" for.
+ *
+ * TEMPORARY: 0 makes the intro play on every visit while it's being worked on.
+ * Restore `10 * 60 * 1000` for the intended once-per-10-minutes behaviour.
+ */
+const QUIET_MS = 0;
 
 const TARGET_CELL = 46;
 const MAX_CELLS = 900;
