@@ -193,6 +193,10 @@ src/main.ts     wiring and app state
   isn't painting, which is enough to wedge the whole app.
 - Anything gated on an animation finishing needs a timeout backstop, for the same
   reason: animations don't run in a backgrounded tab.
+- The site uses exactly two cursors — a default arrow and a blocked state — set on
+  `*` so the browser's own pointer, text and resize cursors are overridden too.
+  The blocked one is driven by `:disabled`, so it follows the buttons' real state.
+  SVG cursors aren't supported in Safari, which falls back to `auto`/`not-allowed`.
 - `icons/` is a staging folder for exported artwork; the served copies live in
   `public/assets/`. Vite is told not to watch it — a design tool writing a file in
   place crashes the dev server's watcher with `EBUSY`.

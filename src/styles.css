@@ -11,6 +11,11 @@
   /* The button's resting state: grey text with a matching border. */
   --btn-idle: #9a9a9a;
   --menu: #131313;
+  /* Exactly two cursors site-wide: a default arrow and a blocked state.
+     Hotspots: the arrow's tip is the viewBox origin; the blocked glyph is
+     symmetric, so its centre. */
+  --cursor-default: url('/assets/cursors/default.svg') 1 1, auto;
+  --cursor-blocked: url('/assets/cursors/blocked.svg') 14 14, not-allowed;
   --mono: 'Geist Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
   --box-size: 560px;
 }
@@ -19,6 +24,23 @@
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+/*
+ * One cursor for everything. Applied to every element rather than to `body`
+ * so the UA's own cursors — the pointer over links and buttons, the I-beam
+ * over text — are overridden too.
+ */
+*,
+*::before,
+*::after {
+  cursor: var(--cursor-default);
+}
+
+/* The only other state that exists. */
+:disabled,
+[aria-disabled='true'] {
+  cursor: var(--cursor-blocked);
 }
 
 /* `hidden` is only a `display: none` default, so any explicit display value on
@@ -176,7 +198,6 @@ body {
   border: 1px dashed var(--line);
   color: inherit;
   font: inherit;
-  cursor: pointer;
   overflow: hidden;
   transition: border-color 120ms ease, background 120ms ease;
 }
@@ -197,7 +218,6 @@ body {
 .dropbox.has-image {
   width: auto;
   height: auto;
-  cursor: pointer;
 }
 
 .dropbox__prompt {
@@ -264,7 +284,6 @@ body {
   color: var(--text);
   font: inherit;
   font-size: 14px;
-  cursor: pointer;
   transition: background 120ms ease;
 }
 
@@ -274,7 +293,6 @@ body {
 
 .tool:disabled {
   opacity: 0.4;
-  cursor: default;
 }
 
 .tool__icon {
@@ -310,7 +328,6 @@ body {
   color: var(--text);
   font: inherit;
   font-size: 14px;
-  cursor: pointer;
   transition: background 120ms ease;
 }
 
@@ -370,7 +387,6 @@ body {
   font-size: 14px;
   color: var(--text);
   white-space: nowrap;
-  cursor: pointer;
 }
 
 .pselect__option.is-active {
@@ -414,7 +430,6 @@ body {
   padding: 0;
   border: 1px solid transparent;
   background: none;
-  cursor: pointer;
   transition: border-color 120ms ease, opacity 120ms ease;
   opacity: 0.6;
 }
@@ -455,7 +470,6 @@ body {
   font-weight: 500;
   font-size: 18px;
   letter-spacing: 1.08px;
-  cursor: pointer;
   transition: transform 80ms ease, opacity 120ms ease, border-color 200ms ease;
 }
 
@@ -508,12 +522,10 @@ body {
 
 .ditherate:disabled {
   opacity: 0.35;
-  cursor: not-allowed;
 }
 
 .ditherate.is-busy {
   opacity: 0.6;
-  cursor: progress;
 }
 
 /* ---------- footer ---------- */
@@ -534,7 +546,6 @@ body {
   color: var(--muted);
   font: inherit;
   font-size: 12px;
-  cursor: pointer;
   transition: color 120ms ease;
 }
 
