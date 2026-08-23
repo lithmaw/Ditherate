@@ -195,6 +195,13 @@ src/main.ts     wiring and app state
   isn't painting, which is enough to wedge the whole app.
 - Anything gated on an animation finishing needs a timeout backstop, for the same
   reason: animations don't run in a backgrounded tab.
+- Arriving dissolves a full-screen pixel cover off the page. It's rate-limited to
+  once every 10 minutes rather than once a visit, so a reload doesn't replay it.
+  The overlay carries a solid fill in CSS so the page is covered from the first
+  paint, and hands that fill over to the cells once JS builds them.
+- Chrome drops the page's custom cursor after a native file dialog closes and
+  won't re-evaluate until the pointer moves. `src/ui/cursorFix.ts` forces the
+  re-evaluation on the file input's `cancel`/`change` and on window focus.
 - The site uses exactly two cursors — a default arrow and a blocked state — set on
   `*` so the browser's own pointer, text and resize cursors are overridden too.
   The blocked one is driven by `:disabled`, so it follows the buttons' real state.

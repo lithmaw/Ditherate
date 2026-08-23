@@ -37,10 +37,26 @@
   cursor: var(--cursor-default);
 }
 
-/* The only other state that exists. */
+/*
+ * The only other state that exists. The descendant selectors matter: a
+ * disabled button's children don't match :disabled, so without them the label
+ * inside the generate button keeps the arrow while its border shows blocked.
+ */
 :disabled,
-[aria-disabled='true'] {
+:disabled *,
+[aria-disabled='true'],
+[aria-disabled='true'] * {
   cursor: var(--cursor-blocked);
+}
+
+/*
+ * Chrome stops applying the page's cursor after a native file dialog closes
+ * and doesn't re-evaluate until the pointer moves. Flipping every element to a
+ * different cursor for one frame forces that re-evaluation.
+ */
+html.cursor-reset,
+html.cursor-reset * {
+  cursor: none !important;
 }
 
 /* `hidden` is only a `display: none` default, so any explicit display value on
@@ -67,6 +83,29 @@ body {
      not enough to notice unless you look for it. */
   opacity: 0.07;
   image-rendering: pixelated;
+}
+
+/*
+ * Covers the page from the first paint, so there is no flash of the finished
+ * layout before the reveal starts. Once JS has built the cells they take over
+ * the covering and this fill is dropped.
+ */
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  pointer-events: none;
+  background: var(--bg);
+}
+
+.intro.is-ready {
+  background: transparent;
+}
+
+.intro__cell {
+  display: block;
+  background: var(--bg);
 }
 
 body {

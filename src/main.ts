@@ -9,7 +9,9 @@ import { History } from './ui/history.ts';
 import { setupLogoShuffle } from './ui/logoShuffle.ts';
 import { PixelSelect } from './ui/pixelSelect.ts';
 import { setupBackgroundNoise } from './ui/backgroundNoise.ts';
+import { setupCursorFix } from './ui/cursorFix.ts';
 import { ImageReveal } from './ui/imageReveal.ts';
+import { setupIntroReveal } from './ui/introReveal.ts';
 import { animationsEnabled, onAnimationsChange, setAnimationsEnabled } from './ui/motion.ts';
 import { onSoundChange, play, setSoundEnabled, soundEnabled } from './ui/sound.ts';
 import { setupPixelReveal } from './ui/pixelReveal.ts';
@@ -33,6 +35,7 @@ const algorithmPixels = el('algorithmPixels');
 const invertBtn = el<HTMLButtonElement>('invertBtn');
 const backdrop = el<HTMLCanvasElement>('backdrop');
 const canvasPixels = el('canvasPixels');
+const intro = el('intro');
 const motionToggle = el<HTMLButtonElement>('motionToggle');
 const soundToggle = el<HTMLButtonElement>('soundToggle');
 const wordmark = el('wordmark');
@@ -256,6 +259,10 @@ async function download(): Promise<void> {
     downloadBtn.textContent = original;
   }
 }
+
+// Run before anything else so the cover comes off as early as possible.
+setupIntroReveal(intro);
+setupCursorFix(fileInput);
 
 setupDropzone({
   box: dropbox,
