@@ -11,6 +11,7 @@ import { PixelSelect } from './ui/pixelSelect.ts';
 import { setupBackgroundNoise } from './ui/backgroundNoise.ts';
 import { ImageReveal } from './ui/imageReveal.ts';
 import { animationsEnabled, onAnimationsChange, setAnimationsEnabled } from './ui/motion.ts';
+import { onSoundChange, play, setSoundEnabled, soundEnabled } from './ui/sound.ts';
 import { setupPixelReveal } from './ui/pixelReveal.ts';
 
 const el = <T extends HTMLElement>(id: string): T => {
@@ -33,6 +34,7 @@ const invertBtn = el<HTMLButtonElement>('invertBtn');
 const backdrop = el<HTMLCanvasElement>('backdrop');
 const canvasPixels = el('canvasPixels');
 const motionToggle = el<HTMLButtonElement>('motionToggle');
+const soundToggle = el<HTMLButtonElement>('soundToggle');
 const wordmark = el('wordmark');
 const wordmarkShuffle = el('wordmarkShuffle');
 const caption = el('caption');
@@ -100,6 +102,12 @@ function fit(w: number, h: number, max: number): { width: number; height: number
   };
 }
 
+/** Invert and Download only mean anything once something has been generated. */
+function setRollActionsEnabled(enabled: boolean): void {
+  invertBtn.disabled = !enabled;
+  downloadBtn.disabled = !enabled;
+}
+
 /** The caption is an error slot only — it stays hidden when nothing is wrong. */
 function setCaption(text: string): void {
   caption.textContent = text;
@@ -140,12 +148,16 @@ function loadImage(bitmap: ImageBitmap, name: string): void {
   dropboxPrompt.hidden = true;
   clearCaption();
   ditherateBtn.disabled = false;
-  // Invert and Download act on a roll, so they wait until there is one.
-  tools.hidden = true;
+  // The controls appear with the image so the algorithm can be chosen before
+  // generating. Invert and Download act on a roll, so they stay disabled until
+  // there is one rather than disappearing.
+  tools.hidden = false;
+  setRollActionsEnabled(false);
   history.clear();
 
   loaded = { bitmap, name, source: rasterise(bitmap, width, height) };
   current = null;
+  play('drop');
 
   // Show the image untouched. Dithering is what the button is for — doing it
   // on upload spends the user's first look before they've asked for anything.
@@ -191,7 +203,7 @@ async function render(seed: number, forcedMap?: MapId, flipped = false): Promise
 
     ctx.putImageData(result, 0, 0);
     imageReveal.play();
-    tools.hidden = false;
+    setRollActionsEnabled(true);
     history.add(seed, settings.map, flipped, result);
     // The map and invert flag go in the URL too, or a shared link reproduces
     // the roll's palette and grain but not how it actually looked.
@@ -226,7 +238,7 @@ async function download(): Promise<void> {
   if (!loaded || !current || busy) return;
   downloadBtn.disabled = true;
   const original = downloadBtn.textContent;
-  downloadBtn.textContent = 'rendering…';
+  downloadBtn.textContent = 'Rendering…';
 
   try {
     const target = fit(loaded.bitmap.width, loaded.bitmap.height, MAX_EXPORT_EDGE);
@@ -238,7 +250,9 @@ async function download(): Promise<void> {
     console.error(error);
     setCaption("couldn't export that image");
   } finally {
-    downloadBtn.disabled = false;
+    // Not unconditionally re-enabled: the image may have been replaced while
+    // the export was running, which leaves nothing to download.
+    downloadBtn.disabled = !current;
     downloadBtn.textContent = original;
   }
 }
@@ -251,6 +265,7 @@ setupDropzone({
 });
 
 ditherateBtn.addEventListener('click', () => {
+  play('drop');
   // A seed carried in from a shared link is spent on the first press, so the
   // link still reproduces its roll even though upload no longer generates.
   const shared = takeShared();
@@ -260,10 +275,12 @@ ditherateBtn.addEventListener('click', () => {
 
 
 downloadBtn.addEventListener('click', () => {
+  play('click');
   void download();
 });
 
 invertBtn.addEventListener('click', () => {
+  play('click');
   if (!current) return;
   // A one-shot action on the picture in front of you, recorded as its own
   // entry. It is not a mode: the next roll comes out however it rolls.
@@ -290,10 +307,46 @@ function paintMotionToggle(): void {
   motionToggle.setAttribute('aria-pressed', String(on));
 }
 
-motionToggle.addEventListener('click', () => setAnimationsEnabled(!animationsEnabled()));
+// The algorithm menu's own elements are built by PixelSelect, so the tick is
+// attached here rather than wiring sound through a generic component.
+algorithmTrigger.addEventListener('click', () => play('click'));
+algorithmList.addEventListener('click', () => play('click'));
+
+motionToggle.addEventListener('click', () => {
+  play('click');
+  setAnimationsEnabled(!animationsEnabled());
+});
 onAnimationsChange((on) => {
   paintMotionToggle();
+
+function paintSoundToggle(): void {
+  const on = soundEnabled();
+  soundToggle.textContent = `Sound: ${on ? 'On' : 'Off'}`;
+  soundToggle.setAttribute('aria-pressed', String(on));
+}
+
+soundToggle.addEventListener('click', () => {
+  // Play before muting so switching off still gives feedback that it worked.
+  play('click');
+  setSoundEnabled(!soundEnabled());
+});
+onSoundChange(paintSoundToggle);
+paintSoundToggle();
   // Any cover mid-dissolve would otherwise freeze on top of the image.
   if (!on) imageReveal.hide();
 });
 paintMotionToggle();
+
+function paintSoundToggle(): void {
+  const on = soundEnabled();
+  soundToggle.textContent = `Sound: ${on ? 'On' : 'Off'}`;
+  soundToggle.setAttribute('aria-pressed', String(on));
+}
+
+soundToggle.addEventListener('click', () => {
+  // Play before muting so switching off still gives feedback that it worked.
+  play('click');
+  setSoundEnabled(!soundEnabled());
+});
+onSoundChange(paintSoundToggle);
+paintSoundToggle();

@@ -522,6 +522,7 @@ body {
   width: 100%;
   display: flex;
   justify-content: center;
+  gap: 4px;
   padding-bottom: 6px;
 }
 

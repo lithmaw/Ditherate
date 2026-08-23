@@ -113,6 +113,14 @@ It inverts tones *before* quantizing, so the palette stays intact and the dither
 structure stays valid — a polarity flip, not a pixel-exact negative of the
 output.
 
+**Sound.** Two UI effects from [soundcn](https://github.com/kapishdima/soundcn):
+a drop on the generate press and on loading an image, a click on everything else.
+Each sound is a self-contained module with the audio inlined as a base64 data
+URI, so there is nothing to fetch at runtime. The registry ships a React
+`useSound` hook *and* a framework-agnostic `sound-engine.ts`; this project uses
+the engine, so no React is involved. A footer switch mutes it, remembered in
+`localStorage`.
+
 Loading an image does **not** dither it. The photo is shown untouched until you
 press the button; Invert and Download stay hidden until there's a roll for them
 to act on. A seed carried in from a shared link is spent on that first press, so
@@ -158,7 +166,8 @@ fill it in. Three details worth keeping:
 src/dither/     threshold maps, palettes, CPU pipeline — pure, DOM-free
 src/render/     WebGL2 renderer + engine selection
 src/worker/     runs src/dither off the main thread
-src/ui/         dropzone, pixel reveals, pixel select, logo shuffle, motion, history, download
+src/sounds/     soundcn effects and their Web Audio engine
+src/ui/         dropzone, pixel reveals, pixel select, logo shuffle, motion, sound, history, download
 src/main.ts     wiring and app state
 ```
 
@@ -173,6 +182,7 @@ src/main.ts     wiring and app state
 | Algorithm picker | pin one algorithm, keep everything else random |
 | History thumbnails | jump back to an earlier roll |
 | Animations (footer) | turn all motion on or off; remembered between visits |
+| Sound (footer) | mute the UI effects; remembered between visits |
 
 ## Notes
 
@@ -192,3 +202,7 @@ src/main.ts     wiring and app state
 The `dot`, `diagonal` and `spiral` screens were inspired by the matrix set in
 [Spargo](https://github.com/darkroomengineering/spargo) (MIT), a real-time GPU
 dithering tool by Darkroom Engineering.
+
+Sound effects (`click-003`, `drop-004`) come from
+[soundcn](https://github.com/kapishdima/soundcn), originally by
+[Kenney](https://kenney.nl) and released under CC0.
