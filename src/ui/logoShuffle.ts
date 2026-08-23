@@ -59,12 +59,15 @@ export function setupLogoShuffle(logo: HTMLElement, layer: HTMLElement): void {
   };
 
   const stop = (): void => {
+    if (!hovering) return;
     hovering = false;
     window.clearTimeout(timer);
-    if (cells.length) {
-      utils.remove(cells);
-      for (const cell of cells) cell.style.opacity = '0';
-    }
+    if (!cells.length) return;
+
+    // Cancel the in-flight blink, then ease whatever is still lit back down
+    // together. Snapping them to 0 makes the logo flick as the cursor leaves.
+    utils.remove(cells);
+    animate(cells, { opacity: 0, duration: 260, ease: 'outQuad' });
   };
 
   logo.addEventListener('pointerenter', () => {

@@ -50,11 +50,11 @@ export class History {
       button.type = 'button';
       button.className = 'history__item';
       button.classList.toggle('is-active', entry.seed === this.activeSeed);
-      button.title = `roll ${entry.seed}`;
+      button.title = `Roll ${entry.seed}`;
 
       const img = document.createElement('img');
       img.src = entry.thumbnail;
-      img.alt = `roll ${entry.seed}`;
+      img.alt = `Roll ${entry.seed}`;
       button.append(img);
 
       button.addEventListener('click', () => this.onSelect(entry.seed, entry.map));

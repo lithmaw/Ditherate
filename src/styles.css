@@ -10,6 +10,7 @@
   --text: #ffffff;
   /* The button's resting state: grey text with a matching border. */
   --btn-idle: #9a9a9a;
+  --menu: #131313;
   --mono: 'Geist Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
   --box-size: 460px;
 }
@@ -121,7 +122,7 @@ body {
   padding: 10px 15px;
   background: var(--chip);
   color: var(--text);
-  font-size: 12px;
+  font-size: 14px;
   text-decoration: none;
   transition: background 120ms ease;
 }
@@ -193,8 +194,8 @@ body {
 
 .dropbox__icon {
   display: block;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   background-color: currentColor;
   -webkit-mask: url('/assets/upload.svg') center / contain no-repeat;
   mask: url('/assets/upload.svg') center / contain no-repeat;
@@ -211,7 +212,7 @@ body {
 /* Only ever shown to report a problem — there is no instruction copy. */
 .caption {
   margin: 0;
-  font-size: 12px;
+  font-size: 14px;
   color: #ff6b5e;
   text-align: center;
 }
@@ -222,19 +223,19 @@ body {
   display: flex;
   align-items: center;
   gap: 15px;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .tool {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 14px;
+  padding: 9px 14px;
   background: var(--chip);
   border: 0;
   color: var(--text);
   font: inherit;
-  font-size: 12px;
+  font-size: 14px;
   cursor: pointer;
   transition: background 120ms ease;
 }
@@ -250,8 +251,8 @@ body {
 
 .tool__icon {
   display: block;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   background-color: currentColor;
 }
 
@@ -262,41 +263,122 @@ body {
 
 /* ---------- algorithm select ---------- */
 
-.select {
+.pselect {
+  position: relative;
+}
+
+.pselect__trigger {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 14px;
+  padding: 9px 14px;
   background: var(--chip);
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.select__label {
-  color: var(--muted);
-}
-
-.select__input {
-  appearance: none;
-  background: transparent;
   border: 0;
   color: var(--text);
   font: inherit;
-  font-size: 12px;
+  font-size: 14px;
   cursor: pointer;
-  padding-right: 12px;
-  /* A monospace caret, so it matches the rest of the type. */
-  background-image: linear-gradient(transparent, transparent);
+  transition: background 120ms ease;
 }
 
-.select__input:focus-visible {
+.pselect__trigger:hover,
+.pselect.is-open .pselect__trigger {
+  background: var(--chip-hover);
+}
+
+.pselect__trigger:focus-visible {
   outline: 1px solid var(--line);
+  outline-offset: 2px;
 }
 
-/* The native dropdown list paints in the OS palette, so force it dark. */
-.select__input option {
-  background: #101010;
+.pselect__name {
+  color: var(--muted);
+}
+
+.pselect__caret {
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid currentColor;
+  transition: transform 140ms ease;
+}
+
+.pselect.is-open .pselect__caret {
+  transform: rotate(180deg);
+}
+
+.pselect__panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 10;
+  min-width: 100%;
+  /* Opaque, and matching the pixel cover exactly — any gap between the two
+     would show as a seam while the cover dissolves. */
+  background: var(--menu);
+  outline: none;
+}
+
+.pselect__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 260px;
+  overflow-y: auto;
+  /*
+   * The browser paints the scrollbar above the pixel cover, so a default light
+   * scrollbar sits there un-dissolved through the whole reveal. Make it dark
+   * and narrow so it reads as part of the menu.
+   */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+.pselect__list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.pselect__list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pselect__list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.pselect__option {
+  padding: 9px 14px;
+  font-size: 14px;
   color: var(--text);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.pselect__option.is-active {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.pselect__option[aria-selected='true'] {
+  color: var(--text);
+}
+
+.pselect__option[aria-selected='true']::after {
+  content: ' •';
+  color: var(--muted);
+}
+
+.pselect__pixels {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  pointer-events: none;
+}
+
+.pselect__pixel {
+  display: block;
+  background: var(--menu);
+  opacity: 0;
 }
 
 /* ---------- history ---------- */

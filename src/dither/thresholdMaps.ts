@@ -35,16 +35,16 @@ export const MAP_IDS: MapId[] = [
 
 /** Human-readable names for the algorithm picker. */
 export const MAP_LABELS: Record<MapId, string> = {
-  bayer2: 'bayer 2x2',
-  bayer4: 'bayer 4x4',
-  bayer8: 'bayer 8x8',
-  bayer16: 'bayer 16x16',
-  'blue-noise': 'blue noise',
-  threshold: 'threshold',
-  dot: 'clustered dot',
-  diagonal: 'diagonal',
-  spiral: 'spiral',
-  'white-noise': 'white noise',
+  bayer2: 'Bayer 2×2',
+  bayer4: 'Bayer 4×4',
+  bayer8: 'Bayer 8×8',
+  bayer16: 'Bayer 16×16',
+  'blue-noise': 'Blue Noise',
+  threshold: 'Threshold',
+  dot: 'Clustered Dot',
+  diagonal: 'Diagonal',
+  spiral: 'Spiral',
+  'white-noise': 'White Noise',
 };
 
 /**

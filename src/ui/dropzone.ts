@@ -9,7 +9,7 @@ const isImage = (file: File): boolean => file.type.startsWith('image/');
 
 async function decode(file: File, options: Options): Promise<void> {
   if (!isImage(file)) {
-    options.onError('that file is not an image — try a png, jpg, gif or webp');
+    options.onError('That file is not an image — try a PNG, JPG, GIF or WebP');
     return;
   }
   try {
@@ -17,7 +17,7 @@ async function decode(file: File, options: Options): Promise<void> {
     const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
     options.onImage(bitmap, file.name);
   } catch {
-    options.onError("couldn't read that image — it may be corrupt or an unsupported format");
+    options.onError("Couldn't read that image — it may be corrupt or an unsupported format");
   }
 }
 

@@ -94,6 +94,11 @@ Two consequences worth keeping:
 The picker says what the *next* roll will be, not what's on screen — restoring from
 history deliberately leaves it alone.
 
+The **algorithm menu** is a custom listbox, not a `<select>` — a native option
+list is drawn by the OS and can't be animated, so opening it dissolves a grid of
+pixels away to uncover the options. Keyboard behaviour (arrows, Home/End, Enter,
+Escape, click-outside) is reimplemented to match the platform.
+
 The **logo** shuffles its own pixels while hovered. The cells sit inside the wordmark,
 which carries a CSS mask, so they're clipped to the letterforms — painting one in the
 panel colour punches a pixel-shaped hole, and blinking a random third of them in and out
@@ -117,7 +122,7 @@ fill it in. Three details worth keeping:
 src/dither/     threshold maps, palettes, CPU pipeline — pure, DOM-free
 src/render/     WebGL2 renderer + engine selection
 src/worker/     runs src/dither off the main thread
-src/ui/         dropzone, pixel reveal, logo shuffle, history, download
+src/ui/         dropzone, pixel reveal, pixel select, logo shuffle, history, download
 src/main.ts     wiring and app state
 ```
 
@@ -138,6 +143,11 @@ src/main.ts     wiring and app state
 - EXIF orientation is honoured, so phone photos come out the right way up.
 - Don't await `img.decode()` anywhere in the roll path. It never settles while a tab
   isn't painting, which is enough to wedge the whole app.
+- Anything gated on an animation finishing needs a timeout backstop, for the same
+  reason: animations don't run in a backgrounded tab.
+- `icons/` is a staging folder for exported artwork; the served copies live in
+  `public/assets/`. Vite is told not to watch it — a design tool writing a file in
+  place crashes the dev server's watcher with `EBUSY`.
 
 ## Credits
 

@@ -52,15 +52,26 @@
             <p class="caption" id="caption" hidden></p>
 
             <div class="tools" id="tools" hidden>
-              <label class="select" for="algorithm">
-                <span class="select__label">algorithm</span>
-                <select class="select__input" id="algorithm">
-                  <option value="">random</option>
-                </select>
-              </label>
+              <div class="pselect" id="algorithmRoot">
+                <button
+                  type="button"
+                  class="pselect__trigger"
+                  id="algorithmTrigger"
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                >
+                  <span class="pselect__name">Algorithm</span>
+                  <span class="pselect__value" id="algorithmValue"></span>
+                  <span class="pselect__caret" aria-hidden="true"></span>
+                </button>
+                <div class="pselect__panel" id="algorithmPanel" tabindex="-1" hidden>
+                  <ul class="pselect__list" id="algorithmList" role="listbox" aria-label="Algorithm"></ul>
+                  <span class="pselect__pixels" id="algorithmPixels" aria-hidden="true"></span>
+                </div>
+              </div>
               <button type="button" class="tool" id="downloadBtn">
                 <span class="tool__icon tool__icon--download" aria-hidden="true"></span>
-                <span>download png</span>
+                <span>Download PNG</span>
               </button>
             </div>
 

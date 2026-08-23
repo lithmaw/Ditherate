@@ -7,6 +7,7 @@ import { downloadImageData } from './ui/download.ts';
 import { setupDropzone } from './ui/dropzone.ts';
 import { History } from './ui/history.ts';
 import { setupLogoShuffle } from './ui/logoShuffle.ts';
+import { PixelSelect } from './ui/pixelSelect.ts';
 import { setupPixelReveal } from './ui/pixelReveal.ts';
 
 const el = <T extends HTMLElement>(id: string): T => {
@@ -19,7 +20,12 @@ const dropbox = el<HTMLButtonElement>('dropbox');
 const dropboxPrompt = el('dropboxPrompt');
 const canvas = el<HTMLCanvasElement>('canvas');
 const ditheratePixels = el('ditheratePixels');
-const algorithmSelect = el<HTMLSelectElement>('algorithm');
+const algorithmRoot = el('algorithmRoot');
+const algorithmTrigger = el<HTMLButtonElement>('algorithmTrigger');
+const algorithmValue = el('algorithmValue');
+const algorithmPanel = el('algorithmPanel');
+const algorithmList = el('algorithmList');
+const algorithmPixels = el('algorithmPixels');
 const wordmark = el('wordmark');
 const wordmarkShuffle = el('wordmarkShuffle');
 const caption = el('caption');
@@ -55,7 +61,28 @@ const history = new History(historyEl, (seed, map) => {
 });
 
 /** The algorithm the picker is pinned to, or null for "random". */
-const selectedMap = (): MapId | null => (algorithmSelect.value || null) as MapId | null;
+let pinnedMap: MapId | null = null;
+
+// Constructed for its side effects: it owns the trigger, the listbox and the
+// pixel cover, and reports back through onChange.
+new PixelSelect({
+  root: algorithmRoot,
+  trigger: algorithmTrigger,
+  valueEl: algorithmValue,
+  panel: algorithmPanel,
+  list: algorithmList,
+  pixels: algorithmPixels,
+  options: [
+    { value: '', label: 'Random' },
+    ...MAP_IDS.map((id) => ({ value: id, label: MAP_LABELS[id] })),
+  ],
+  onChange: (value) => {
+    pinnedMap = (value || null) as MapId | null;
+    // Re-roll straight away so the choice is visible at once rather than
+    // waiting for the next press.
+    if (loaded) void render(randomSeed());
+  },
+});
 
 /** Fit `w x h` inside a square of `max`, never scaling up. */
 function fit(w: number, h: number, max: number): { width: number; height: number } {
@@ -146,7 +173,7 @@ async function render(seed: number, forcedMap?: MapId): Promise<void> {
   ditherateBtn.classList.add('is-busy');
 
   try {
-    const settings = rollSettings(seed, loaded.source.data, forcedMap ?? selectedMap() ?? undefined);
+    const settings = rollSettings(seed, loaded.source.data, forcedMap ?? pinnedMap ?? undefined);
     const result = await renderDither(loaded.source, settings);
     current = { settings, result };
 
@@ -212,18 +239,6 @@ ditherateBtn.addEventListener('click', () => {
   void render(randomSeed());
 });
 
-for (const id of MAP_IDS) {
-  const option = document.createElement('option');
-  option.value = id;
-  option.textContent = MAP_LABELS[id];
-  algorithmSelect.append(option);
-}
-
-// Changing the algorithm re-rolls immediately, so the choice is visible at once
-// rather than waiting for the next press.
-algorithmSelect.addEventListener('change', () => {
-  if (loaded) void render(randomSeed());
-});
 
 downloadBtn.addEventListener('click', () => {
   void download();
