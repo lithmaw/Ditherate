@@ -60,28 +60,13 @@ type Loaded = {
 };
 
 let loaded: Loaded | null = null;
-let current: { settings: Settings; result: ImageData } | null = null;
+let current: { settings: Settings; result: ImageData; flipped: boolean } | null = null;
 let busy = false;
 
-const history = new History(historyEl, (seed, map, wasInverted) => {
-  // Restore the roll exactly as it was, whatever the controls say now. Invert
-  // is a visible on/off state, so the button follows the restored image —
-  // unlike the algorithm picker, which names what the *next* roll will be.
-  setInverted(wasInverted);
-  void render(seed, map);
+const history = new History(historyEl, (seed, map, wasFlipped) => {
+  // Restore the roll exactly as it was, whatever the controls say now.
+  void render(seed, map, wasFlipped);
 });
-
-/**
- * Flips whatever the roll landed on. A toggle that forced inversion on would do
- * nothing to the rolls that came up inverted already — the point is to be able
- * to turn any result around.
- */
-let inverted = false;
-
-function setInverted(value: boolean): void {
-  inverted = value;
-  invertBtn.setAttribute('aria-pressed', String(value));
-}
 
 /** The algorithm the picker is pinned to, or null for "random". */
 let pinnedMap: MapId | null = null;
@@ -155,17 +140,19 @@ function loadImage(bitmap: ImageBitmap, name: string): void {
   dropboxPrompt.hidden = true;
   clearCaption();
   ditherateBtn.disabled = false;
-  tools.hidden = false;
+  // Invert and Download act on a roll, so they wait until there is one.
+  tools.hidden = true;
   history.clear();
 
   loaded = { bitmap, name, source: rasterise(bitmap, width, height) };
   current = null;
 
-  // Roll straight away — an upload that just sits there waiting for a second
-  // click is a worse first impression than seeing the effect immediately.
-  const shared = takeShared();
-  if (shared?.inverted) setInverted(true);
-  void render(shared?.seed ?? randomSeed(), shared?.map);
+  // Show the image untouched. Dithering is what the button is for — doing it
+  // on upload spends the user's first look before they've asked for anything.
+  ctx.putImageData(loaded.source, 0, 0);
+
+  // Nothing is rolled yet, so the URL shouldn't still name the previous roll.
+  window.history.replaceState(null, '', window.location.pathname + window.location.search);
 }
 
 /**
@@ -191,23 +178,24 @@ function takeShared(): { seed: number; map?: MapId; inverted: boolean } | null {
   return value;
 }
 
-async function render(seed: number, forcedMap?: MapId): Promise<void> {
+async function render(seed: number, forcedMap?: MapId, flipped = false): Promise<void> {
   if (!loaded || busy) return;
   busy = true;
   ditherateBtn.classList.add('is-busy');
 
   try {
     const rolled = rollSettings(seed, loaded.source.data, forcedMap ?? pinnedMap ?? undefined);
-    const settings = inverted ? { ...rolled, invert: !rolled.invert } : rolled;
+    const settings = flipped ? { ...rolled, invert: !rolled.invert } : rolled;
     const result = await renderDither(loaded.source, settings);
-    current = { settings, result };
+    current = { settings, result, flipped };
 
     ctx.putImageData(result, 0, 0);
     imageReveal.play();
-    history.add(seed, settings.map, inverted, result);
+    tools.hidden = false;
+    history.add(seed, settings.map, flipped, result);
     // The map and invert flag go in the URL too, or a shared link reproduces
     // the roll's palette and grain but not how it actually looked.
-    const invertFlag = inverted ? '&i=1' : '';
+    const invertFlag = flipped ? '&i=1' : '';
     window.history.replaceState(null, '', `#s=${seed}&m=${settings.map}${invertFlag}`);
     clearCaption();
   } catch (error) {
@@ -263,7 +251,11 @@ setupDropzone({
 });
 
 ditherateBtn.addEventListener('click', () => {
-  void render(randomSeed());
+  // A seed carried in from a shared link is spent on the first press, so the
+  // link still reproduces its roll even though upload no longer generates.
+  const shared = takeShared();
+  if (shared) void render(shared.seed, shared.map, shared.inverted);
+  else void render(randomSeed());
 });
 
 
@@ -272,10 +264,10 @@ downloadBtn.addEventListener('click', () => {
 });
 
 invertBtn.addEventListener('click', () => {
-  setInverted(!inverted);
-  // Re-render the roll on screen rather than rolling a new one: this flips
-  // what you're looking at, it isn't another spin.
-  if (current) void render(current.settings.seed, current.settings.map);
+  if (!current) return;
+  // A one-shot action on the picture in front of you, recorded as its own
+  // entry. It is not a mode: the next roll comes out however it rolls.
+  void render(current.settings.seed, current.settings.map, !current.flipped);
 });
 
 // Build the GL context and the threshold maps up front. Blue noise in

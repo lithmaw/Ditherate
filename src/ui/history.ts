@@ -3,7 +3,7 @@ import type { MapId } from '../dither/thresholdMaps.ts';
 const MAX_ENTRIES = 8;
 const THUMB_SIZE = 96;
 
-type Entry = { seed: number; map: MapId; inverted: boolean; thumbnail: string };
+type Entry = { seed: number; map: MapId; flipped: boolean; thumbnail: string };
 
 /**
  * The last few rolls, as clickable thumbnails.
@@ -17,13 +17,13 @@ export class History {
 
   constructor(
     private readonly container: HTMLElement,
-    private readonly onSelect: (seed: number, map: MapId, inverted: boolean) => void,
+    private readonly onSelect: (seed: number, map: MapId, flipped: boolean) => void,
   ) {}
 
-  add(seed: number, map: MapId, inverted: boolean, image: ImageData): void {
-    const match = (e: Entry) => e.seed === seed && e.map === map && e.inverted === inverted;
+  add(seed: number, map: MapId, flipped: boolean, image: ImageData): void {
+    const match = (e: Entry) => e.seed === seed && e.map === map && e.flipped === flipped;
     if (!this.entries.some(match)) {
-      this.entries.push({ seed, map, inverted, thumbnail: makeThumbnail(image) });
+      this.entries.push({ seed, map, flipped, thumbnail: makeThumbnail(image) });
       if (this.entries.length > MAX_ENTRIES) this.entries.shift();
     }
     this.activeSeed = seed;
@@ -58,7 +58,7 @@ export class History {
       img.alt = `Roll ${entry.seed}`;
       button.append(img);
 
-      button.addEventListener('click', () => this.onSelect(entry.seed, entry.map, entry.inverted));
+      button.addEventListener('click', () => this.onSelect(entry.seed, entry.map, entry.flipped));
       this.container.append(button);
     }
   }

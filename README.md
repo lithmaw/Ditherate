@@ -104,11 +104,19 @@ side.
 Choosing an option only arms the choice — DITHERATE is what generates. That's
 what lets you settle on one algorithm and roll it repeatedly.
 
-**Invert** flips the roll on screen rather than spinning a new one. It inverts
-tones *before* quantizing, so the palette stays intact and the dither structure
-stays valid — it is a polarity flip, not a pixel-exact negative of the output. A
-toggle that forced inversion on would do nothing to the rolls that came up
-inverted already, which is the case it exists for.
+**Invert** is a one-shot action on the image in front of you, not a mode: it
+re-renders the current roll with its polarity flipped and records that as its own
+entry. The next roll comes out however it rolls. Pressing it twice returns to
+where you started.
+
+It inverts tones *before* quantizing, so the palette stays intact and the dither
+structure stays valid — a polarity flip, not a pixel-exact negative of the
+output.
+
+Loading an image does **not** dither it. The photo is shown untouched until you
+press the button; Invert and Download stay hidden until there's a roll for them
+to act on. A seed carried in from a shared link is spent on that first press, so
+links still reproduce their roll.
 
 Each new result is **uncovered by dissolving a grid of pixels off it**, painted in
 the panel colour so the image assembles out of the background rather than fading
@@ -161,8 +169,8 @@ src/main.ts     wiring and app state
 | Click the box / drag a file / Ctrl+V | load an image |
 | Click the image again | swap in a different one |
 | DITHERATE | roll a new random look |
+| Invert | re-render the current roll with its polarity flipped |
 | Algorithm picker | pin one algorithm, keep everything else random |
-| Invert | flip the polarity of the current roll |
 | History thumbnails | jump back to an earlier roll |
 | Animations (footer) | turn all motion on or off; remembered between visits |
 

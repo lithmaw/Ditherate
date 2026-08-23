@@ -289,15 +289,6 @@ body {
   mask: url('/assets/swap.svg') center / contain no-repeat;
 }
 
-.tool[aria-pressed='true'] {
-  background: var(--text);
-  color: #000000;
-}
-
-.tool[aria-pressed='true']:hover {
-  background: #e2e2e2;
-}
-
 .tool__icon--download {
   -webkit-mask: url('/assets/download.svg') center / contain no-repeat;
   mask: url('/assets/download.svg') center / contain no-repeat;
