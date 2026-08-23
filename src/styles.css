@@ -11,6 +11,9 @@
   /* The button's resting state: grey text with a matching border. */
   --btn-idle: #9a9a9a;
   --menu: #131313;
+  /* Deliberately lighter than the page: the cover has to be distinguishable
+     from what it's covering or the reveal doesn't read at all. */
+  --intro-cell: #1e1e1e;
   /* Exactly two cursors site-wide: a default arrow and a blocked state.
      Hotspots: the arrow's tip is the viewBox origin; the blocked glyph is
      symmetric, so its centre. */
@@ -96,7 +99,7 @@ body {
   z-index: 100;
   display: grid;
   pointer-events: none;
-  background: var(--bg);
+  background: var(--intro-cell);
 }
 
 .intro.is-ready {
@@ -105,7 +108,7 @@ body {
 
 .intro__cell {
   display: block;
-  background: var(--bg);
+  background: var(--intro-cell);
 }
 
 body {

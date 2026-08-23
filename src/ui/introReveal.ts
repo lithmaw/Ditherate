@@ -13,6 +13,11 @@ const QUIET_MS = 0;
 const TARGET_CELL = 46;
 const MAX_CELLS = 900;
 
+/** How long one cell takes to fade out. */
+const FADE_MS = 260;
+/** Per-step delay across the grid; this is what sets the overall length. */
+const STAGGER_MS = 14;
+
 function recentlyPlayed(): boolean {
   try {
     const last = Number(localStorage.getItem(STORAGE_KEY));
@@ -70,11 +75,15 @@ export function setupIntroReveal(overlay: HTMLElement): void {
   overlay.classList.add('is-ready');
   stamp();
 
+  // Each cell fades quickly; the length of the reveal comes from the stagger
+  // spreading those fades across the grid. anime.js derives a cell's delay from
+  // its distance to a random origin, so the total runs to roughly
+  // FADE_MS + STAGGER_MS * <grid diagonal> — about 800ms at a typical viewport.
   animate(cells, {
     opacity: 0,
-    duration: 220,
+    duration: FADE_MS,
     ease: 'linear',
-    delay: stagger(4, { grid: [cols, rows], from: 'random' }),
+    delay: stagger(STAGGER_MS, { grid: [cols, rows], from: 'random' }),
     onComplete: finish,
   });
 

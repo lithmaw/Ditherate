@@ -199,7 +199,10 @@ src/main.ts     wiring and app state
   play on every visit for testing** — `QUIET_MS` in `src/ui/introReveal.ts` is 0;
   restore `10 * 60 * 1000` for the intended once-per-10-minutes behaviour.
   The overlay carries a solid fill in CSS so the page is covered from the first
-  paint, and hands that fill over to the cells once JS builds them.
+  paint, and hands that fill over to the cells once JS builds them. `html` also
+  gets its background inline in `<head>`, or the browser shows its default white
+  page until the stylesheet arrives. The cover is deliberately lighter than the
+  page — matching it made the reveal invisible. It runs about 800ms.
 - Chrome drops the page's custom cursor after a native file dialog closes and
   won't re-evaluate until the pointer moves. `src/ui/cursorFix.ts` forces the
   re-evaluation on the file input's `cancel`/`change` and on window focus.

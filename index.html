@@ -9,6 +9,16 @@
       content="Upload an image, hit one button, get a randomly dithered version. Everything runs in your browser."
     />
     <link rel="icon" href="/assets/sparkle.svg" />
+    <!--
+      Inline so it applies on the very first paint. Without it the browser
+      shows its default white page until the stylesheet arrives, which reads as
+      a white flash before the intro cover appears.
+    -->
+    <style>
+      html {
+        background: #0a0a0a;
+      }
+    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
