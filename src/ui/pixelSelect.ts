@@ -95,10 +95,24 @@ export class PixelSelect {
     else this.show();
   }
 
+  /**
+   * The menu shows every option with no scrolling, so it can be taller than the
+   * space beneath the trigger. Flip it above when that's the roomier side.
+   */
+  private place(): void {
+    this.o.panel.classList.remove('is-up');
+    const trigger = this.o.trigger.getBoundingClientRect();
+    const panel = this.o.panel.getBoundingClientRect();
+    const below = window.innerHeight - trigger.bottom;
+    const above = trigger.top;
+    if (panel.height > below && above > below) this.o.panel.classList.add('is-up');
+  }
+
   show(): void {
     if (this.open) return;
     this.open = true;
     this.o.panel.hidden = false;
+    this.place();
     this.o.trigger.setAttribute('aria-expanded', 'true');
     this.o.root.classList.add('is-open');
     this.setActive(Math.max(0, this.items.findIndex((i) => i.dataset.value === this.value)));

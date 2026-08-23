@@ -8,6 +8,7 @@ import { setupDropzone } from './ui/dropzone.ts';
 import { History } from './ui/history.ts';
 import { setupLogoShuffle } from './ui/logoShuffle.ts';
 import { PixelSelect } from './ui/pixelSelect.ts';
+import { setupBackgroundNoise } from './ui/backgroundNoise.ts';
 import { setupPixelReveal } from './ui/pixelReveal.ts';
 
 const el = <T extends HTMLElement>(id: string): T => {
@@ -26,6 +27,8 @@ const algorithmValue = el('algorithmValue');
 const algorithmPanel = el('algorithmPanel');
 const algorithmList = el('algorithmList');
 const algorithmPixels = el('algorithmPixels');
+const invertBtn = el<HTMLButtonElement>('invertBtn');
+const backdrop = el<HTMLCanvasElement>('backdrop');
 const wordmark = el('wordmark');
 const wordmarkShuffle = el('wordmarkShuffle');
 const caption = el('caption');
@@ -55,10 +58,25 @@ let loaded: Loaded | null = null;
 let current: { settings: Settings; result: ImageData } | null = null;
 let busy = false;
 
-const history = new History(historyEl, (seed, map) => {
-  // Restore the roll exactly as it was, whatever the picker says now.
+const history = new History(historyEl, (seed, map, wasInverted) => {
+  // Restore the roll exactly as it was, whatever the controls say now. Invert
+  // is a visible on/off state, so the button follows the restored image —
+  // unlike the algorithm picker, which names what the *next* roll will be.
+  setInverted(wasInverted);
   void render(seed, map);
 });
+
+/**
+ * Flips whatever the roll landed on. A toggle that forced inversion on would do
+ * nothing to the rolls that came up inverted already — the point is to be able
+ * to turn any result around.
+ */
+let inverted = false;
+
+function setInverted(value: boolean): void {
+  inverted = value;
+  invertBtn.setAttribute('aria-pressed', String(value));
+}
 
 /** The algorithm the picker is pinned to, or null for "random". */
 let pinnedMap: MapId | null = null;
@@ -77,10 +95,9 @@ new PixelSelect({
     ...MAP_IDS.map((id) => ({ value: id, label: MAP_LABELS[id] })),
   ],
   onChange: (value) => {
+    // Selecting only arms the choice; DITHERATE is what generates. That's what
+    // lets you sit on one algorithm and roll it repeatedly.
     pinnedMap = (value || null) as MapId | null;
-    // Re-roll straight away so the choice is visible at once rather than
-    // waiting for the next press.
-    if (loaded) void render(randomSeed());
   },
 });
 
@@ -142,6 +159,7 @@ function loadImage(bitmap: ImageBitmap, name: string): void {
   // Roll straight away — an upload that just sits there waiting for a second
   // click is a worse first impression than seeing the effect immediately.
   const shared = takeShared();
+  if (shared?.inverted) setInverted(true);
   void render(shared?.seed ?? randomSeed(), shared?.map);
 }
 
@@ -150,7 +168,7 @@ function loadImage(bitmap: ImageBitmap, name: string): void {
  * shared-link case. Consuming it means a later upload gets a fresh roll instead
  * of being pinned to whatever seed the link carried.
  */
-let shared: { seed: number; map?: MapId } | null = (() => {
+let shared: { seed: number; map?: MapId; inverted: boolean } | null = (() => {
   const seedMatch = /(?:^|[#&])s=(\d+)/.exec(window.location.hash);
   if (!seedMatch) return null;
   const seed = Number(seedMatch[1]);
@@ -158,10 +176,11 @@ let shared: { seed: number; map?: MapId } | null = (() => {
 
   const mapMatch = /(?:^|[#&])m=([\w-]+)/.exec(window.location.hash);
   const map = MAP_IDS.find((id) => id === mapMatch?.[1]);
-  return { seed: seed >>> 0, map };
+  const inverted = /(?:^|[#&])i=1/.test(window.location.hash);
+  return { seed: seed >>> 0, map, inverted };
 })();
 
-function takeShared(): { seed: number; map?: MapId } | null {
+function takeShared(): { seed: number; map?: MapId; inverted: boolean } | null {
   const value = shared;
   shared = null;
   return value;
@@ -173,15 +192,17 @@ async function render(seed: number, forcedMap?: MapId): Promise<void> {
   ditherateBtn.classList.add('is-busy');
 
   try {
-    const settings = rollSettings(seed, loaded.source.data, forcedMap ?? pinnedMap ?? undefined);
+    const rolled = rollSettings(seed, loaded.source.data, forcedMap ?? pinnedMap ?? undefined);
+    const settings = inverted ? { ...rolled, invert: !rolled.invert } : rolled;
     const result = await renderDither(loaded.source, settings);
     current = { settings, result };
 
     ctx.putImageData(result, 0, 0);
-    history.add(seed, settings.map, result);
-    // The map goes in the URL too, or a shared link reproduces the roll's
-    // palette and grain but not its algorithm.
-    window.history.replaceState(null, '', `#s=${seed}&m=${settings.map}`);
+    history.add(seed, settings.map, inverted, result);
+    // The map and invert flag go in the URL too, or a shared link reproduces
+    // the roll's palette and grain but not how it actually looked.
+    const invertFlag = inverted ? '&i=1' : '';
+    window.history.replaceState(null, '', `#s=${seed}&m=${settings.map}${invertFlag}`);
     clearCaption();
   } catch (error) {
     console.error(error);
@@ -244,6 +265,13 @@ downloadBtn.addEventListener('click', () => {
   void download();
 });
 
+invertBtn.addEventListener('click', () => {
+  setInverted(!inverted);
+  // Re-render the roll on screen rather than rolling a new one: this flips
+  // what you're looking at, it isn't another spin.
+  if (current) void render(current.settings.seed, current.settings.map);
+});
+
 // Build the GL context and the threshold maps up front. Blue noise in
 // particular takes a moment to generate, and doing it lazily would put that
 // cost on whichever roll happens to land on it first.
@@ -256,3 +284,4 @@ if (typeof requestIdleCallback === 'function') {
 
 setupPixelReveal(ditherateBtn, ditheratePixels);
 setupLogoShuffle(wordmark, wordmarkShuffle);
+setupBackgroundNoise(backdrop);

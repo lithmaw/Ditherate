@@ -97,7 +97,23 @@ history deliberately leaves it alone.
 The **algorithm menu** is a custom listbox, not a `<select>` — a native option
 list is drawn by the OS and can't be animated, so opening it dissolves a grid of
 pixels away to uncover the options. Keyboard behaviour (arrows, Home/End, Enter,
-Escape, click-outside) is reimplemented to match the platform.
+Escape, click-outside) is reimplemented to match the platform. It shows every
+option without scrolling, so it flips above the trigger when that's the roomier
+side.
+
+Choosing an option only arms the choice — DITHERATE is what generates. That's
+what lets you settle on one algorithm and roll it repeatedly.
+
+**Invert** flips the roll on screen rather than spinning a new one. It inverts
+tones *before* quantizing, so the palette stays intact and the dither structure
+stays valid — it is a polarity flip, not a pixel-exact negative of the output. A
+toggle that forced inversion on would do nothing to the rolls that came up
+inverted already, which is the case it exists for.
+
+The **background** is a field of pixel static behind the whole page (the panel is
+opaque, so it only shows in the gutters). A viewport of random bytes at animation
+rate is real CPU for something nobody looks at directly, so a handful of frames
+are built once and cycled instead.
 
 The **logo** shuffles its own pixels while hovered. The cells sit inside the wordmark,
 which carries a CSS mask, so they're clipped to the letterforms — painting one in the
@@ -134,6 +150,7 @@ src/main.ts     wiring and app state
 | Click the image again | swap in a different one |
 | DITHERATE | roll a new random look |
 | Algorithm picker | pin one algorithm, keep everything else random |
+| Invert | flip the polarity of the current roll |
 | History thumbnails | jump back to an earlier roll |
 
 ## Notes

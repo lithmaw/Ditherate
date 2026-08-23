@@ -17,6 +17,7 @@
     />
   </head>
   <body>
+    <canvas class="backdrop" id="backdrop" aria-hidden="true"></canvas>
     <div class="shell">
       <main class="column">
         <header class="header">
@@ -69,6 +70,16 @@
                   <span class="pselect__pixels" id="algorithmPixels" aria-hidden="true"></span>
                 </div>
               </div>
+              <button
+                type="button"
+                class="tool"
+                id="invertBtn"
+                aria-pressed="false"
+                title="Invert the colours of this roll"
+              >
+                <span class="tool__icon tool__icon--swap" aria-hidden="true"></span>
+                <span>Invert</span>
+              </button>
               <button type="button" class="tool" id="downloadBtn">
                 <span class="tool__icon tool__icon--download" aria-hidden="true"></span>
                 <span>Download PNG</span>
@@ -81,7 +92,7 @@
           <button type="button" class="ditherate" id="ditherateBtn" disabled>
             <span class="ditherate__pixels" id="ditheratePixels" aria-hidden="true"></span>
             <span class="ditherate__label">
-              <span>DITHERATE</span>
+              <span>Ditherate</span>
               <span class="ditherate__icon" aria-hidden="true"></span>
             </span>
           </button>
