@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DITHERATE</title>
+    <meta
+      name="description"
+      content="Upload an image, hit one button, get a randomly dithered version. Everything runs in your browser."
+    />
+    <link rel="icon" href="/assets/sparkle.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="shell">
+      <main class="column">
+        <header class="header">
+          <img class="wordmark" src="/assets/wordmark.svg" alt="Ditherate" />
+          <!-- TODO: point this at your own repo / support page. -->
+          <a
+            class="chip"
+            href="https://github.com/"
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            <img src="/assets/support.svg" alt="" aria-hidden="true" />
+            <span>Support</span>
+          </a>
+        </header>
+
+        <div class="workspace">
+          <section class="stage">
+            <button
+              type="button"
+              class="dropbox"
+              id="dropbox"
+              aria-label="Upload an image"
+            >
+              <span class="dropbox__prompt" id="dropboxPrompt">
+                <span class="dropbox__icon" aria-hidden="true"></span>
+                <span>Upload Image</span>
+              </span>
+              <span class="preview" id="previewWrap" hidden>
+                <img class="preview__img" id="preview" alt="Dithered result" />
+                <span class="zoom-pane" id="zoomPane" aria-hidden="true"></span>
+              </span>
+            </button>
+
+            <p class="caption" id="caption">click on the box above to upload your image</p>
+
+            <div class="tools" id="tools" hidden>
+              <button type="button" class="tool" id="downloadBtn">download png</button>
+              <button type="button" class="tool" id="replaceBtn">replace image</button>
+              <span class="tools__hint">hover the image to magnify</span>
+            </div>
+
+            <div class="history" id="history" hidden aria-label="Previous rolls"></div>
+          </section>
+
+          <button type="button" class="ditherate" id="ditherateBtn" disabled>
+            <span class="ditherate__pixels" id="ditheratePixels" aria-hidden="true"></span>
+            <span class="ditherate__label">
+              <span class="ditherate__icon" aria-hidden="true"></span>
+              <span>DITHERATE</span>
+              <span class="ditherate__icon" aria-hidden="true"></span>
+            </span>
+          </button>
+        </div>
+      </main>
+    </div>
+
+    <input type="file" id="fileInput" accept="image/*" hidden />
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

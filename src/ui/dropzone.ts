@@ -1,0 +1,80 @@
+type Options = {
+  box: HTMLElement;
+  fileInput: HTMLInputElement;
+  onImage: (bitmap: ImageBitmap, name: string) => void;
+  onError: (message: string) => void;
+  /** False once an image is loaded — the box becomes a compare surface, not a picker. */
+  canBrowse: () => boolean;
+};
+
+const isImage = (file: File): boolean => file.type.startsWith('image/');
+
+async function decode(file: File, options: Options): Promise<void> {
+  if (!isImage(file)) {
+    options.onError('that file is not an image — try a png, jpg, gif or webp');
+    return;
+  }
+  try {
+    // `from-image` honours EXIF orientation; without it, phone photos land sideways.
+    const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+    options.onImage(bitmap, file.name);
+  } catch {
+    options.onError("couldn't read that image — it may be corrupt or an unsupported format");
+  }
+}
+
+/** Wires up all three ways in: click to browse, drag and drop, and paste. */
+export function setupDropzone(options: Options): void {
+  const { box, fileInput } = options;
+
+  // Keyboard activation follows the same rule as the mouse: no picker once an
+  // image is loaded.
+  box.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      if (!options.canBrowse()) event.preventDefault();
+    }
+  });
+
+  box.addEventListener('click', () => {
+    // Without this guard, releasing a hold-to-compare press would pop the file
+    // dialog every single time.
+    if (options.canBrowse()) fileInput.click();
+  });
+
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files?.[0];
+    if (file) void decode(file, options);
+    // Reset so picking the same file twice still fires a change event.
+    fileInput.value = '';
+  });
+
+  const setDragging = (on: boolean) => box.classList.toggle('is-dragging', on);
+
+  box.addEventListener('dragover', (event) => {
+    event.preventDefault();
+    setDragging(true);
+  });
+  box.addEventListener('dragleave', () => setDragging(false));
+  box.addEventListener('drop', (event) => {
+    event.preventDefault();
+    setDragging(false);
+    const file = event.dataTransfer?.files?.[0];
+    if (file) void decode(file, options);
+  });
+
+  // The whole document accepts a paste — hunting for a focused drop target first
+  // would be a pointless extra step.
+  document.addEventListener('paste', (event) => {
+    const items = event.clipboardData?.items;
+    if (!items) return;
+    for (const item of items) {
+      if (item.kind !== 'file') continue;
+      const file = item.getAsFile();
+      if (file) {
+        event.preventDefault();
+        void decode(file, options);
+        return;
+      }
+    }
+  });
+}

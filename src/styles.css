@@ -1,0 +1,420 @@
+/* Tokens lifted directly from the Figma file (61KjMK339iUuWWpNJRmNU9). */
+:root {
+  --bg: #0a0a0a;
+  --panel: #0b0b0b;
+  --line: rgba(255, 255, 255, 0.25);
+  --chip: rgba(255, 255, 255, 0.05);
+  --chip-hover: rgba(255, 255, 255, 0.1);
+  --box: rgba(255, 255, 255, 0.01);
+  --muted: rgba(255, 255, 255, 0.3);
+  --text: #ffffff;
+  /* The button's resting state: grey text with a matching border. */
+  --btn-idle: #9a9a9a;
+  --mono: 'Geist Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  --box-size: 460px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* `hidden` is only a `display: none` default, so any explicit display value on
+   an element silently defeats it. Make it authoritative. */
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  -webkit-font-smoothing: antialiased;
+}
+
+.shell {
+  min-height: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 0 clamp(0px, 6vw, 100px);
+}
+
+.column {
+  width: 100%;
+  max-width: 1240px;
+  min-height: 100vh;
+  background: var(--panel);
+  border: 1px dashed var(--line);
+  border-top: 0;
+  border-bottom: 0;
+  padding: 35px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 48px;
+}
+
+/*
+ * The header sits at the top; everything else is one group centred in the
+ * space that's left, which keeps the button close under the image instead of
+ * stranded at the bottom of the panel.
+ */
+.workspace {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  padding-bottom: 40px;
+}
+
+/* ---------- header ---------- */
+
+.header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wordmark {
+  display: block;
+  width: 132.166px;
+  height: 17.85px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 15px;
+  background: var(--chip);
+  color: var(--text);
+  font-size: 12px;
+  text-decoration: none;
+  transition: background 120ms ease;
+}
+
+.chip:hover {
+  background: var(--chip-hover);
+}
+
+.chip img {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+/* ---------- stage ---------- */
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.dropbox {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--box-size);
+  height: var(--box-size);
+  max-width: 100%;
+  padding: 0;
+  background: var(--box);
+  border: 1px dashed var(--line);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.dropbox:hover,
+.dropbox:focus-visible {
+  border-color: rgba(255, 255, 255, 0.5);
+  outline: none;
+}
+
+.dropbox.is-dragging {
+  border-color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Once an image is loaded the box takes the image's aspect ratio rather than
+   letterboxing a wide photo inside a square. */
+.dropbox.has-image {
+  width: auto;
+  height: auto;
+  cursor: zoom-in;
+}
+
+.dropbox__prompt {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.dropbox__icon {
+  display: block;
+  width: 16px;
+  height: 16px;
+  background-color: currentColor;
+  -webkit-mask: url('/assets/upload.svg') center / contain no-repeat;
+  mask: url('/assets/upload.svg') center / contain no-repeat;
+}
+
+.preview {
+  position: relative;
+  display: block;
+  line-height: 0;
+}
+
+.preview__img {
+  display: block;
+  max-width: var(--box-size);
+  max-height: var(--box-size);
+  /* Hard pixel edges: the whole point of dithering. */
+  image-rendering: pixelated;
+}
+
+/*
+ * The magnifier pane sits directly on top of the image, so hovering magnifies
+ * in place rather than throwing a second panel out to one side.
+ */
+.zoom-pane {
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--panel);
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.zoom-pane.is-zooming {
+  opacity: 1;
+}
+
+/*
+ * @zoom-image/core scales its zoomed <img> with CSS, which interpolates
+ * smoothly by default — that would blur the dither into mush and defeat the
+ * entire point of magnifying it. Force nearest-neighbour.
+ */
+.zoom-pane img {
+  image-rendering: pixelated;
+}
+
+/*
+ * The library draws a lens rectangle over the source image to show which region
+ * is being magnified. That only makes sense when the zoom pane sits beside the
+ * image — ours sits directly on top of it, so the lens would float over the
+ * magnified view showing nothing useful. The cursor is the indicator instead.
+ *
+ * !important is required: the library sets `display` inline.
+ */
+.zoom-lens {
+  display: none !important;
+}
+
+.caption {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.caption.is-error {
+  color: #ff6b5e;
+}
+
+/* ---------- tools ---------- */
+
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 12px;
+}
+
+.tool {
+  padding: 8px 14px;
+  background: var(--chip);
+  border: 0;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+.tool:hover {
+  background: var(--chip-hover);
+}
+
+.tool:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.tools__hint {
+  color: var(--muted);
+}
+
+/* ---------- history ---------- */
+
+.history {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.history__item {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 1px solid transparent;
+  background: none;
+  cursor: pointer;
+  transition: border-color 120ms ease, opacity 120ms ease;
+  opacity: 0.6;
+}
+
+.history__item:hover {
+  opacity: 1;
+  border-color: var(--line);
+}
+
+.history__item.is-active {
+  opacity: 1;
+  border-color: var(--text);
+}
+
+.history__item img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: pixelated;
+}
+
+/* ---------- the button ---------- */
+
+.ditherate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 20px 60px;
+  background: transparent;
+  border: 1px solid var(--btn-idle);
+  color: var(--btn-idle);
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 18px;
+  letter-spacing: 1.08px;
+  cursor: pointer;
+  transition: transform 80ms ease, opacity 120ms ease, border-color 200ms ease;
+}
+
+/* Once the pixels have mostly landed, the text flips to read on white. */
+.ditherate.is-revealed {
+  border-color: #ffffff;
+}
+
+.ditherate:focus-visible {
+  outline: none;
+  border-color: #ffffff;
+}
+
+.ditherate.is-revealed .ditherate__label {
+  color: #000000;
+  transition-delay: 140ms;
+}
+
+/* The white fill that the pixels reveal, laid under the label. */
+.ditherate__pixels {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: grid;
+  pointer-events: none;
+}
+
+.ditherate__pixel {
+  display: block;
+  background: #ffffff;
+  opacity: 0;
+  /* Cells butt against each other; without this, sub-pixel gaps show as seams. */
+  box-shadow: 0 0 0 0.5px #ffffff;
+}
+
+.ditherate__label {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: color 120ms ease;
+}
+
+/*
+ * The sparkles are masked rather than <img>-ed so they inherit the button's
+ * text colour — grey at rest, black once the white fill arrives. An <img> can't
+ * be recoloured by CSS.
+ */
+.ditherate__icon {
+  display: block;
+  width: 22px;
+  height: 22px;
+  background-color: currentColor;
+  -webkit-mask: url('/assets/sparkle.svg') center / contain no-repeat;
+  mask: url('/assets/sparkle.svg') center / contain no-repeat;
+}
+
+.ditherate:not(:disabled):active {
+  transform: scale(0.98);
+}
+
+.ditherate:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.ditherate.is-busy {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+@media (max-width: 520px) {
+  .column {
+    padding: 20px;
+  }
+
+  .ditherate {
+    padding: 18px 32px;
+    font-size: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
